@@ -32,36 +32,131 @@ class CRM_API_Contact extends CRM_API_TaggableExtendableEntity {
 	public static function updateIdGroupStatus($contactId, $group, $status, $dateTime = NULL) {
 		$groupId = CRM_API_Group::getId($group);
 		
-		$apiResult = civicrm_api('GroupContact', 'create', array(
-			'version' => '3',
-			'contact_id' => $contactId,
-			'group_id' => $groupId,
-			'status' => $status
-		));
-		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(ts('Failed to set contact %1\'s status in group %2 to %3', array(1 => $contactId, 2 => $groupId, 3 => $status)), $apiResult);
-		
-		// Set the date of the status update.
-		if (!is_null($dateTime)) {
-			if (is_string($dateTime)) $dateTime = new DateTime($dateTime);
-			
-			CRM_Core_DAO::executeQuery("
-				UPDATE civicrm_subscription_history
-				SET date = %1
-				WHERE
-					contact_id = %2 AND
-					group_id = %3 AND
-					status = %4 AND
-					TIMEDIFF(%5, date) BETWEEN '00:00:00' AND '00:01:00' # Record created within the last minute
-				ORDER BY date DESC
-				LIMIT 1
-			", array(
-				1 => array($dateTime->format('YmdHis'), 'Timestamp'),
-				2 => array($contactId, 'Positive'),
-				3 => array($groupId, 'Positive'),
-				4 => array($status, 'String'),
-				5 => array(date('YmdHis'), 'Timestamp')
+		if (is_null($dateTime)) {
+			$apiResult = civicrm_api('GroupContact', 'create', array(
+				'version' => '3',
+				'contact_id' => $contactId,
+				'group_id' => $groupId,
+				'status' => $status
 			));
+			if (civicrm_error($apiResult))
+				throw new CRM_API_Exception(ts('Failed to set contact %1\'s status in group %2 to %3', array(1 => $contactId, 2 => $groupId, 3 => $status)), $apiResult);
+		} else {
+			// The CiviCRM API assumes that the status update is immediate.
+			// However, it is often necessary to record a past status update.
+			// The API cannot be used for this, so the database must be updated directly.
+			
+			$timestamp = $dateTime->getTimestamp();
+			if ($timestamp > time())
+				throw new Exception(ts('Cannot set contact %1\'s group %2 status at a future time (%3)', [1 => $contactId, 2 => $groupId, 3 => CRM_API_Utils::toString($dateTime)]));
+			
+			// Build an array of the contact's subscription changes for this group.
+			$subscriptionHistory = [];
+			foreach (CRM_API_SubscriptionHistory::get([
+				'contact_id' => $contactId,
+				'group_id' => $groupId
+			]) as $subscriptionUpdate) {
+				$subscriptionHistory[new DateTime($subscriptionUpdate->date)->getTimestamp()][] = $subscriptionUpdate;
+			}
+			
+			// Find out whether the subscription history record already exists, and delete any simultaneous ones.
+			if (array_key_exists($timestamp, $subscriptionHistory)) {
+				foreach ($subscriptionHistory[$timestamp] as $subscriptionUpdate) {
+					if (
+						$subscriptionUpdate->method === 'API' &&
+						$subscriptionUpdate->status === $status &&
+						!isset($subscriptionUpdate->tracking) &&
+						!isset($existingSubscriptionUpdate)
+					) {
+						$existingSubscriptionUpdate = $subscriptionUpdate;
+					} else {
+						$subscriptionUpdate->delete();
+					}
+				}
+			}
+			$subscriptionHistory[$timestamp] = NULL;
+			ksort($subscriptionHistory);
+			
+			// Delete redundant subscription updates.
+			foreach ($subscriptionHistory as $aTimestamp => $subscriptionUpdates) {
+				if ($aTimestamp === $timestamp) break;
+			}
+			
+			$previousStatus = 'Removed';
+			$previousStatus = static::subscriptionUpdatesStatus($subscriptionUpdates);
+			
+			if ($status === $previousStatus) {
+				// If this update has the same status as the previous one, then it's redundant, so delete it.
+				if (isset($existingSubscriptionUpdate)) {
+					$existingSubscriptionUpdate->delete();
+				}
+			} elseif (!isset($existingSubscriptionUpdate)) {
+				// Create the subscription update if it doesn't already exist.
+				CRM_API_SubscriptionHistory::create([
+					'contact_id' => $contactId,
+					'group_id' => $groupId,
+					'date' => $dateTime,
+					'method' => 'API',
+					'status' => $status
+				]);
+				$previousStatus = $status;
+			}
+			
+			// If the next update has the same status then it's redundant, so delete it.
+			$subscriptionUpdates = next($subscriptionHistory);
+			if ($subscriptionUpdates) {
+				$statuses = [];
+				foreach ($subscriptionUpdates as $subscriptionUpdate) {
+					$statuses[$subscriptionUpdate->status] = NULL;
+				}
+				if (count($statuses) === 1) {
+					if (key($statuses) === $previousStatus) {
+						foreach ($subscriptionUpdates as $subscriptionUpdate) {
+							$subscriptionUpdate->delete();
+						}
+					}
+					$previousStatus = key($statuses);
+				} else {
+					$previousStatus = NULL;
+				}
+			}
+			
+			// If the
+			$groupContactDao = CRM_Core_DAO::executeQuery("
+				SELECT id, status
+				FROM civicrm_group_contact
+				WHERE group_id = %1 AND contact_id = %2
+			", [
+				1 => [$groupId, 'Positive'],
+				2 => [$contactId, 'Positive']
+			]);
+			if ($groupContactDao->fetch()) {
+				
+			}
+			$groupContactDao->free();
+			
+			if (!is_null($groupContact)) {
+				if ($groupContact->status !== $status && $status === $previousStatus) {
+					CRM_Core_DAO::executeQuery("
+						UPDATE civicrm_group_contact
+						SET status = %1
+						WHERE id = %2
+					", [
+						1 => [$status, 'String'],
+						2 => [$groupContact->id, 'Positive']
+					]);
+				}
+			} else {
+				CRM_Core_DAO::executeQuery("
+					INSERT INTO civicrm_group_contact
+					(group_id, contact_id, status)
+					VALUES (%1, %2, %3)
+				", [
+					1 => [$groupId, 'Positive'],
+					2 => [$contactId, 'Positive'],
+					3 => [$status, 'String']
+				]);
+			}
 		}
 		
 		// Update the cache.
@@ -125,6 +220,16 @@ class CRM_API_Contact extends CRM_API_TaggableExtendableEntity {
 	
 	public function getActivities($params = array(), $cache = NULL, $readFromCache = TRUE) {
 		return CRM_API_Activity::get(array('target_contact_id' => $this->id) + $params, $cache, $readFromCache);
+	}
+	
+	// Given an array of group subscription history updates, return their status.
+	protected static function subscriptionUpdatesStatus($subscriptionUpdates) {
+		if (!$subscriptionUpdates) return NULL;
+		$status = array_shift($subscriptionUpdates)->status;
+		foreach ($subscriptionUpdates as $subscriptionUpdate) {
+			if ($subscriptionUpdate->status !== $status) return NULL;
+		}
+		return $status;
 	}
 	
 	protected static function initProperties() {
