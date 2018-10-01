@@ -3,7 +3,7 @@
 use PHPUnit\Framework\TestCase;
 eval(`cv php:boot`);
 
-class ContactTest extends TestCase {
+class CRM_API_ContactTest extends TestCase {
 	public function testDatedSubscription(): array {
 		// Set up the fixture for testing dated subscriptions/unsubscriptions.
 		$contactParams = ['contact_type' => 'Individual', 'first_name' => __CLASS__];
