@@ -36,7 +36,7 @@ class CRM_API_Utils {
 			
 			if (!$multiline && method_exists($arg, '__toString')) return $arg->__toString();
 			
-			if (get_class($arg) === 'DateTime') return 'DateTime(' . $arg->format('Y-m-d H:i:s') . ')';
+			if (get_class($arg) === 'DateTime') return 'DateTime(' . $arg->format('Y-m-d H:i:s.v T') . ')';
 			
 			$string = get_class($arg) . '(' . $eol;
 			$reflectionClass = new ReflectionClass($arg);
