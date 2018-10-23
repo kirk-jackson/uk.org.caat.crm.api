@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<extension key="uk.org.caat.crm.civiapi" type="module">
-  <file>civiapi</file>
-  <name>CiviAPI</name>
-  <description>An object-oriented wrapper for the CiviCRM API</description>
+<extension key="uk.org.caat.crm.api" type="module">
+  <file>api</file>
+  <name>Object-Oriented API</name>
+  <description>An object-oriented wrapper for the CiviCRM APIv3</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Kirk Jackson</author>
