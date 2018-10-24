@@ -1,9 +1,24 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
-eval(`cv php:boot`);
+use CRM_API_ExtensionUtil as E;
+use Civi\Test\HeadlessInterface;
 
-class CRM_API_ContactTest extends TestCase {
+/**
+ * @group headless
+ */
+class CRM_API_ContactTest extends \PHPUnit_Framework_TestCase implements HeadlessInterface {
+	public function setUpHeadless() {
+		return \Civi\Test::headless()->installMe(__DIR__)->apply();
+	}
+	
+	public function setUp() {
+		parent::setUp();
+	}
+	
+	public function tearDown() {
+		parent::tearDown();
+	}
+	
 	public function testDatedSubscription(): array {
 		// Set up the fixture for testing dated subscriptions/unsubscriptions.
 		$contactParams = ['contact_type' => 'Individual', 'first_name' => __CLASS__];
