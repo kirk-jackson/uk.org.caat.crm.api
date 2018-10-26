@@ -1,5 +1,7 @@
 <?php
 
+use CRM_API_ExtensionUtil as E;
+
 class CRM_API_ParentChildRelationship {
 	private $parentClass, $childClass; // The classes of the parent and child entities.
 	private $parentIdField; // The field of a child entity that contains the ID of its parent entity.

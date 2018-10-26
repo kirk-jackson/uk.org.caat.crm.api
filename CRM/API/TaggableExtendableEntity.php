@@ -1,5 +1,7 @@
 <?php
 
+use CRM_API_ExtensionUtil as E;
+
 abstract class CRM_API_TaggableExtendableEntity extends CRM_API_ExtendableEntity {
 	public function tag($tag) {
 		static::tagId($this->id, $tag);

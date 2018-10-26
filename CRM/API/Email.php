@@ -1,5 +1,7 @@
 <?php
 
+use CRM_API_ExtensionUtil as E;
+
 class CRM_API_Email extends CRM_API_Entity {
 	protected static $properties;
 	

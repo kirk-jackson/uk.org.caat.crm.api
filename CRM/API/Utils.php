@@ -1,5 +1,7 @@
 <?php
 
+use CRM_API_ExtensionUtil as E;
+
 class CRM_API_Utils {
 	// Convert data of any type to string, for diagnostic purposes. Similar to print_r and var_dump but more concise.
 	public static function toString($arg, $multiline = FALSE) {

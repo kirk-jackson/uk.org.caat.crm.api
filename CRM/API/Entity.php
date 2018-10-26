@@ -1,5 +1,7 @@
 <?php
 
+use CRM_API_ExtensionUtil as E;
+
 require_once 'api/v3/utils.php';
 require_once 'api/Exception.php';
 
@@ -221,177 +223,6 @@ abstract class CRM_API_Entity {
 		return $string;
 	}
 	
-	// Create a new object to represent an entity in the database.
-	protected function __construct($fieldSet, $cache, $mayHaveChildren = TRUE) {
-		// Initialise the object's properties.
-		$this->id = $fieldSet->id;
-		$this->fields = $fieldSet->fields;
-		$this->timestamp = $fieldSet->timestamp;
-		
-		// Cache if required.
-		if (is_null($cache)) $cache = static::$properties->cacheByDefault;
-		if ($cache) $this->cacheObject($mayHaveChildren);
-	}
-	
-	// The entity has been updated so update the called object, the cached object and the cache if necessary.
-	protected function updateAndReconcile($fieldSet) {
-		$entity = static::getFromCache($this->id);
-		
-		if (!is_null($entity)) $entity->updateAndRecache($fieldSet);
-		
-		if ($entity !== $this) $this->setFields($fieldSet);
-	}
-	
-	// The entity has been deleted so update the called object, the cached object and the cache if necessary.
-	protected function deleteAndReconcile() {
-		$entity = static::getFromCache($this->id);
-		
-		if (!is_null($entity)) {
-			$entity->uncacheObject(TRUE);
-			$entity->setDeleted();
-		}
-		
-		if ($entity !== $this) $this->setDeleted();
-	}
-	
-	// Return the object with the most up-to-date representation of the entity -
-	// the called object or the cached object (in case they're not the same).
-	protected function latest() {
-		$entity = static::getFromCache($this->id);
-		if (!is_null($entity) && $entity->timestamp > $this->timestamp)
-			return $entity;
-		return $this;
-	}
-	
-	// Update a cached object and the cache.
-	protected function updateAndRecache($fieldSet) {
-		if ($fieldSet->fields == $this->fields) return;
-		
-		// Work out a list of parent-child relationships in which this entity's parent is cached.
-		$activeParentRelationships = array();
-		foreach (static::$properties->parentRelationships as $parentRelationship)
-			if ($parentRelationship->isChildsParentCached($this))
-				$activeParentRelationships[] = $parentRelationship;
-		
-		// Remove from parent-child relationship caches.
-		foreach ($activeParentRelationships as $parentRelationship)
-			$parentRelationship->uncacheChild($this);
-		
-		$this->removeFromLookups();
-		$this->setFields($fieldSet);
-		$this->addToLookups();
-		
-		// Add to parent-child relationship caches.
-		foreach ($activeParentRelationships as $parentRelationship)
-			$parentRelationship->cacheChild($this);
-	}
-	
-	// Add an uncached object to the cache.
-	protected function cacheObject($mayHaveChildren = TRUE) {
-		$this->addToLookups();
-		
-		// Add this entity's children to child caches.
-		if (static::$properties->autoloadChildren) {
-			foreach (static::$properties->childRelationships as $childRelationship) {
-				if ($mayHaveChildren)
-					$this->cacheChildren($childRelationship);
-				else
-					$childRelationship->cacheParent($this->id);
-			}
-		}
-		
-		// Add this entity to the extant child caches of any parent entities.
-		foreach (static::$properties->parentRelationships as $parentRelationship)
-			if ($parentRelationship->isChildsParentCached($this))
-				$parentRelationship->cacheChild($this);
-	}
-	
-	// Remove a cached object from the cache.
-	protected function uncacheObject($deleted = FALSE) {
-		// Remove this entity from the extant child caches of any parent entities.
-		foreach (static::$properties->parentRelationships as $parentRelationship)
-			if ($parentRelationship->isChildsParentCached($this))
-				$parentRelationship->uncacheChild($this);
-		
-		// Remove this entity's children from child caches.
-		foreach (static::$properties->childRelationships as $childRelationship) {
-			if ($childRelationship->isParentCached($this->id)) {
-				$children = $childRelationship->getChildren($this->id);
-				$childRelationship->uncacheParent($this->id);
-				foreach ($children as $child) $child->uncacheObject($deleted);
-			}
-		}
-		
-		$this->removeFromLookups();
-		
-		if (!$deleted) static::$properties->allCached = FALSE;
-	}
-	
-	// Record that the database entity has been updated.
-	protected function setFields($fieldSet) {
-		if ($fieldSet->id !== $this->id)
-			throw new Exception(E::ts('Fields set\'s ID %1 does not match entity\'s ID %2', array(1 => $fieldSet->id, 2 => $this->id)));
-		$this->fields = $fieldSet->fields;
-		$this->timestamp = $fieldSet->timestamp;
-	}
-	
-	protected function setDeleted() {
-		$this->fields = NULL;
-		$this->deleted = TRUE;
-		$this->timestamp = microtime(TRUE);
-	}
-	
-	// Raise an error if the entity has been deleted.
-	protected function assertNotDeleted() {
-		if ($this->deleted)
-			throw new Exception(E::ts('%1 has been deleted', array(1 => $this)));
-	}
-	
-	// Add the object to the cache's lookups.
-	protected function addToLookups() {
-		foreach (static::$properties->lookups as $lookupKey => &$refLookup) {
-			if ($lookupKey === 'id') {
-				$lookupValue = $this->id;
-			} else {
-				$lookupValue = static::lookupValue($lookupKey, $this->fields);
-				if (is_null($lookupValue)) continue;
-			}
-			$refLookup[$lookupValue] = $this;
-		}
-	}
-	
-	// Remove the object from the cache's lookups.
-	protected function removeFromLookups() {
-		foreach (static::$properties->lookups as $lookupKey => &$refLookup) {
-			if ($lookupKey === 'id') {
-				$lookupValue = $this->id;
-			} else {
-				$lookupValue = static::lookupValue($lookupKey, $this->fields);
-				if (is_null($lookupValue)) continue;
-			}
-			unset($refLookup[$lookupValue]);
-		}
-	}
-	
-	// Cache this object's children and its relationship to them.
-	protected function cacheChildren($childRelationship) {
-		$childClass = $childRelationship->childClass;
-		$params = array($childRelationship->parentIdField => $this->id);
-		if (isset($childRelationship->parentDbTableField))
-			$param[$childRelationship->parentDbTableField] = static::$properties->dbTable;
-		$children = $childClass::get($params, TRUE);
-		
-		$childRelationship->cacheParent($this->id);
-		foreach ($children as $child) $childRelationship->cacheChild($child);
-	}
-	
-	// Uncache this object's children and its relationship to them.
-	protected function uncacheChildren($childRelationship) {
-		$children = $childRelationship->getChildren($this->id);
-		$childRelationship->uncacheParent($this->id);
-		foreach ($children as $child) $child->uncache();
-	}
-	
 	// Create an entity in the database.
 	public static function create($params, $cache = NULL) {
 		static::assertIdNotSupplied($params);
@@ -584,6 +415,178 @@ abstract class CRM_API_Entity {
 		foreach (self::$childClasses as $childClass)
 			$diagnostics[$childClass] = count($childClass::$properties->lookups['id']);
 		return $diagnostics;
+	}
+	
+	
+	// Create a new object to represent an entity in the database.
+	protected function __construct($fieldSet, $cache, $mayHaveChildren = TRUE) {
+		// Initialise the object's properties.
+		$this->id = $fieldSet->id;
+		$this->fields = $fieldSet->fields;
+		$this->timestamp = $fieldSet->timestamp;
+		
+		// Cache if required.
+		if (is_null($cache)) $cache = static::$properties->cacheByDefault;
+		if ($cache) $this->cacheObject($mayHaveChildren);
+	}
+	
+	// The entity has been updated so update the called object, the cached object and the cache if necessary.
+	protected function updateAndReconcile($fieldSet) {
+		$entity = static::getFromCache($this->id);
+		
+		if (!is_null($entity)) $entity->updateAndRecache($fieldSet);
+		
+		if ($entity !== $this) $this->setFields($fieldSet);
+	}
+	
+	// The entity has been deleted so update the called object, the cached object and the cache if necessary.
+	protected function deleteAndReconcile() {
+		$entity = static::getFromCache($this->id);
+		
+		if (!is_null($entity)) {
+			$entity->uncacheObject(TRUE);
+			$entity->setDeleted();
+		}
+		
+		if ($entity !== $this) $this->setDeleted();
+	}
+	
+	// Return the object with the most up-to-date representation of the entity -
+	// the called object or the cached object (in case they're not the same).
+	protected function latest() {
+		$entity = static::getFromCache($this->id);
+		if (!is_null($entity) && $entity->timestamp > $this->timestamp)
+			return $entity;
+		return $this;
+	}
+	
+	// Update a cached object and the cache.
+	protected function updateAndRecache($fieldSet) {
+		if ($fieldSet->fields == $this->fields) return;
+		
+		// Work out a list of parent-child relationships in which this entity's parent is cached.
+		$activeParentRelationships = array();
+		foreach (static::$properties->parentRelationships as $parentRelationship)
+			if ($parentRelationship->isChildsParentCached($this))
+				$activeParentRelationships[] = $parentRelationship;
+		
+		// Remove from parent-child relationship caches.
+		foreach ($activeParentRelationships as $parentRelationship)
+			$parentRelationship->uncacheChild($this);
+		
+		$this->removeFromLookups();
+		$this->setFields($fieldSet);
+		$this->addToLookups();
+		
+		// Add to parent-child relationship caches.
+		foreach ($activeParentRelationships as $parentRelationship)
+			$parentRelationship->cacheChild($this);
+	}
+	
+	// Add an uncached object to the cache.
+	protected function cacheObject($mayHaveChildren = TRUE) {
+		$this->addToLookups();
+		
+		// Add this entity's children to child caches.
+		if (static::$properties->autoloadChildren) {
+			foreach (static::$properties->childRelationships as $childRelationship) {
+				if ($mayHaveChildren)
+					$this->cacheChildren($childRelationship);
+				else
+					$childRelationship->cacheParent($this->id);
+			}
+		}
+		
+		// Add this entity to the extant child caches of any parent entities.
+		foreach (static::$properties->parentRelationships as $parentRelationship)
+			if ($parentRelationship->isChildsParentCached($this))
+				$parentRelationship->cacheChild($this);
+	}
+	
+	// Remove a cached object from the cache.
+	protected function uncacheObject($deleted = FALSE) {
+		// Remove this entity from the extant child caches of any parent entities.
+		foreach (static::$properties->parentRelationships as $parentRelationship)
+			if ($parentRelationship->isChildsParentCached($this))
+				$parentRelationship->uncacheChild($this);
+		
+		// Remove this entity's children from child caches.
+		foreach (static::$properties->childRelationships as $childRelationship) {
+			if ($childRelationship->isParentCached($this->id)) {
+				$children = $childRelationship->getChildren($this->id);
+				$childRelationship->uncacheParent($this->id);
+				foreach ($children as $child) $child->uncacheObject($deleted);
+			}
+		}
+		
+		$this->removeFromLookups();
+		
+		if (!$deleted) static::$properties->allCached = FALSE;
+	}
+	
+	// Record that the database entity has been updated.
+	protected function setFields($fieldSet) {
+		if ($fieldSet->id !== $this->id)
+			throw new Exception(E::ts('Fields set\'s ID %1 does not match entity\'s ID %2', array(1 => $fieldSet->id, 2 => $this->id)));
+		$this->fields = $fieldSet->fields;
+		$this->timestamp = $fieldSet->timestamp;
+	}
+	
+	protected function setDeleted() {
+		$this->fields = NULL;
+		$this->deleted = TRUE;
+		$this->timestamp = microtime(TRUE);
+	}
+	
+	// Raise an error if the entity has been deleted.
+	protected function assertNotDeleted() {
+		if ($this->deleted)
+			throw new Exception(E::ts('%1 has been deleted', array(1 => $this)));
+	}
+	
+	// Add the object to the cache's lookups.
+	protected function addToLookups() {
+		foreach (static::$properties->lookups as $lookupKey => &$refLookup) {
+			if ($lookupKey === 'id') {
+				$lookupValue = $this->id;
+			} else {
+				$lookupValue = static::lookupValue($lookupKey, $this->fields);
+				if (is_null($lookupValue)) continue;
+			}
+			$refLookup[$lookupValue] = $this;
+		}
+	}
+	
+	// Remove the object from the cache's lookups.
+	protected function removeFromLookups() {
+		foreach (static::$properties->lookups as $lookupKey => &$refLookup) {
+			if ($lookupKey === 'id') {
+				$lookupValue = $this->id;
+			} else {
+				$lookupValue = static::lookupValue($lookupKey, $this->fields);
+				if (is_null($lookupValue)) continue;
+			}
+			unset($refLookup[$lookupValue]);
+		}
+	}
+	
+	// Cache this object's children and its relationship to them.
+	protected function cacheChildren($childRelationship) {
+		$childClass = $childRelationship->childClass;
+		$params = array($childRelationship->parentIdField => $this->id);
+		if (isset($childRelationship->parentDbTableField))
+			$param[$childRelationship->parentDbTableField] = static::$properties->dbTable;
+		$children = $childClass::get($params, TRUE);
+		
+		$childRelationship->cacheParent($this->id);
+		foreach ($children as $child) $childRelationship->cacheChild($child);
+	}
+	
+	// Uncache this object's children and its relationship to them.
+	protected function uncacheChildren($childRelationship) {
+		$children = $childRelationship->getChildren($this->id);
+		$childRelationship->uncacheParent($this->id);
+		foreach ($children as $child) $child->uncache();
 	}
 	
 	// Return an object that represents an existing entity in the database.

@@ -1,5 +1,7 @@
 <?php
 
+use CRM_API_ExtensionUtil as E;
+
 class CRM_API_Participant extends CRM_API_ExtendableEntity {
 	protected static $properties;
 	

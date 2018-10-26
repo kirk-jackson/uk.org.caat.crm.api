@@ -1,5 +1,7 @@
 <?php
 
+use CRM_API_ExtensionUtil as E;
+
 // This class defines the properties and holds the cache for each entity type
 class CRM_API_EntityType {
 	public $entityType; // The type of entity

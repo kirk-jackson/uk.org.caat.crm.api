@@ -1,5 +1,7 @@
 <?php
 
+use CRM_API_ExtensionUtil as E;
+
 abstract class CRM_API_ExtendableEntity extends CRM_API_Entity {
 	protected $customFields;
 	
