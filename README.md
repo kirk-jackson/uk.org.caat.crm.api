@@ -1,5 +1,4 @@
-CiviAPI
-=======
+# Object-Oriented API
 
 CiviAPI is an extension for CiviCRM that provides an object-oriented wrapper for the native API.
 
@@ -25,8 +24,39 @@ foreach ($contact->getAddresses() as $address) {
 
 Note that it is helpful to have some familiarity with CiviCRM's native API in order to understand how this extension works.
 
-How to use
-----------
+The extension is licensed under [AGPL-3.0](LICENSE.txt).
+
+## Requirements
+
+* PHP v7.0+
+* CiviCRM v5.6
+
+## Installation (Web UI)
+
+This extension has not yet been published for installation via the web UI.
+
+## Installation (CLI, Zip)
+
+Sysadmins and developers may download the `.zip` file for this extension and
+install it with the command-line tool [cv](https://github.com/civicrm/cv).
+
+```bash
+cd <extension-dir>
+cv dl uk.org.caat.crm.api@https://github.com/kirk-jackson/uk.org.caat.crm.api/archive/master.zip
+```
+
+## Installation (CLI, Git)
+
+Sysadmins and developers may clone the [Git](https://en.wikipedia.org/wiki/Git) repo for this extension and
+install it with the command-line tool [cv](https://github.com/civicrm/cv).
+
+```bash
+git clone https://github.com/kirk-jackson/uk.org.caat.crm.api.git
+cv en api
+```
+
+## Usage
+
 ### Class names
 Each type of entity has its own class.
 The name of each class is the native API's entity name prefixed by 'CRM\_API_',
@@ -611,3 +641,7 @@ The CRM_API_EntityType constructor takes a single argument - an array of optiona
 
 ### Dependencies
 This extension is built to use the native API's core actions as much as possible, but it does also directly access a few internal API functions, core functions and database tables. This means that if CiviCRM's underlying implementation changes, the extension may need to be rewritten.
+
+## Known Issues
+
+(* FIXME *)

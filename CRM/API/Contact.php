@@ -40,7 +40,7 @@ class CRM_API_Contact extends CRM_API_TaggableExtendableEntity {
 				'status' => $status
 			));
 			if (civicrm_error($apiResult))
-				throw new CRM_API_Exception(ts('Failed to set contact %1\'s status in group %2 to %3', array(1 => $contactId, 2 => $groupId, 3 => $status)), $apiResult);
+				throw new CRM_API_Exception(E::ts('Failed to set contact %1\'s status in group %2 to %3', array(1 => $contactId, 2 => $groupId, 3 => $status)), $apiResult);
 			
 			static::updateGroupIdCache($contactId, $groupId, $status);
 		} else {
@@ -49,7 +49,7 @@ class CRM_API_Contact extends CRM_API_TaggableExtendableEntity {
 			// The API cannot do this, so the next best way is to use the BAO layer.
 			
 			if ($dateTime > new DateTime)
-				throw new Exception(ts('Cannot set contact %1\'s group %2 status at a future time (%3)', [1 => $contactId, 2 => $groupId, 3 => CRM_API_Utils::toString($dateTime)]));
+				throw new Exception(E::ts('Cannot set contact %1\'s group %2 status at a future time (%3)', [1 => $contactId, 2 => $groupId, 3 => CRM_API_Utils::toString($dateTime)]));
 			
 			// If there hasn't been a more recent subscription update then update the contact's group status.
 			$lastSubscriptionUpdate = CRM_API_SubscriptionHistory::getSingle([
@@ -130,7 +130,7 @@ class CRM_API_Contact extends CRM_API_TaggableExtendableEntity {
 			'status' => $status
 		));
 		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(ts('Failed to retrieve groups for which contact %1 is %2', array(1 => $contactId, 2 => $status)), $apiResult);
+			throw new CRM_API_Exception(E::ts('Failed to retrieve groups for which contact %1 is %2', array(1 => $contactId, 2 => $status)), $apiResult);
 		
 		foreach ($apiResult['values'] as $fields)
 			$groupIds[] = $fields['group_id'];

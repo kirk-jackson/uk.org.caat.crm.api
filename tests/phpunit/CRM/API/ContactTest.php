@@ -4,6 +4,8 @@ use CRM_API_ExtensionUtil as E;
 use Civi\Test\HeadlessInterface;
 
 /**
+ * Unit tests for the CRM_API_Contact class.
+ * 
  * @group headless
  */
 class CRM_API_ContactTest extends \PHPUnit_Framework_TestCase implements HeadlessInterface {

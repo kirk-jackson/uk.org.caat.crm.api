@@ -83,7 +83,7 @@ abstract class CRM_API_Entity {
 		// Make sure this entity isn't in another entity's child cache.
 		foreach (static::$properties->parentRelationships as $parentRelationship)
 			if ($parentRelationship->isChildsParentCached($this))
-				throw new Exception(ts('Cannot uncache %1 as its parent %2 is cached', array(1 => $this, 2 => $parentRelationship->parentClass)));
+				throw new Exception(E::ts('Cannot uncache %1 as its parent %2 is cached', array(1 => $this, 2 => $parentRelationship->parentClass)));
 		
 		$entity = static::getFromCache($this->id);
 		if (!is_null($entity)) $entity->uncacheObject();
@@ -106,12 +106,12 @@ abstract class CRM_API_Entity {
 		if ($field === 'entityType') return static::$properties->entityType;
 		$this->assertNotDeleted();
 		if (array_key_exists($field, $this->fields)) return $this->fields[$field];
-		throw new Exception(ts('%1 does not have a field called %2', array(1 => $this, 2 => $field)));
+		throw new Exception(E::ts('%1 does not have a field called %2', array(1 => $this, 2 => $field)));
 	}
 	
 	// Field values cannot be set individually - they can only be changed using update().
 	public function __set($field, $value) {
-		throw new Exception(ts('Cannot set %1\'s field %2 - use update() to update the database', array(1 => static::$properties->entityType, 2 => $field)));
+		throw new Exception(E::ts('Cannot set %1\'s field %2 - use update() to update the database', array(1 => static::$properties->entityType, 2 => $field)));
 	}
 	
 	// Is a particular field set and not null?
@@ -135,7 +135,7 @@ abstract class CRM_API_Entity {
 					// It's possible for a "child" entity to have no parent, e.g. not all addresses belong to contacts.
 					if (is_null($this->$parentIdField)) {
 						if (!$required) return NULL;
-						throw new Exception(ts('%1 does not have a %2', array(1 => $this, 2 => $parentClass::$properties->entityType)));
+						throw new Exception(E::ts('%1 does not have a %2', array(1 => $this, 2 => $parentClass::$properties->entityType)));
 					}
 					
 					return $parentClass::getSingle($this->$parentIdField, TRUE, $cache, $readFromCache);
@@ -203,7 +203,7 @@ abstract class CRM_API_Entity {
 			}
 		}
 		
-		throw new Exception(ts('Call to undefined method %1::%2()', array(1 => get_called_class(), 2 => $functionName)));
+		throw new Exception(E::ts('Call to undefined method %1::%2()', array(1 => get_called_class(), 2 => $functionName)));
 	}
 	
 	// Output the entity as a string (for diagnostic purposes).
@@ -330,7 +330,7 @@ abstract class CRM_API_Entity {
 	// Record that the database entity has been updated.
 	protected function setFields($fieldSet) {
 		if ($fieldSet->id !== $this->id)
-			throw new Exception(ts('Fields set\'s ID %1 does not match entity\'s ID %2', array(1 => $fieldSet->id, 2 => $this->id)));
+			throw new Exception(E::ts('Fields set\'s ID %1 does not match entity\'s ID %2', array(1 => $fieldSet->id, 2 => $this->id)));
 		$this->fields = $fieldSet->fields;
 		$this->timestamp = $fieldSet->timestamp;
 	}
@@ -344,7 +344,7 @@ abstract class CRM_API_Entity {
 	// Raise an error if the entity has been deleted.
 	protected function assertNotDeleted() {
 		if ($this->deleted)
-			throw new Exception(ts('%1 has been deleted', array(1 => $this)));
+			throw new Exception(E::ts('%1 has been deleted', array(1 => $this)));
 	}
 	
 	// Add the object to the cache's lookups.
@@ -422,7 +422,7 @@ abstract class CRM_API_Entity {
 	// Get entities from the database.
 	public static function get($params = array(), $cache = NULL, $readFromCache = TRUE) {
 		if (!is_array($params))
-			throw new Exception(ts('%1 passed instead of parameter array', array(1 => CRM_API_Utils::toString($params))));
+			throw new Exception(E::ts('%1 passed instead of parameter array', array(1 => CRM_API_Utils::toString($params))));
 		$params = static::normaliseFields($params, TRUE);
 		
 		$gettingAll = !$params;
@@ -484,16 +484,16 @@ abstract class CRM_API_Entity {
 		elseif (is_int($params) || is_string($params) && ctype_digit($params))
 			$getParams = array('id' => $params);
 		elseif (!is_array($params))
-			throw new Exception(ts('Cannot use a %1 to look up a %2', array(1 => CRM_API_Utils::toString($params), 2 => static::$properties->entityType)));
+			throw new Exception(E::ts('Cannot use a %1 to look up a %2', array(1 => CRM_API_Utils::toString($params), 2 => static::$properties->entityType)));
 		
 		$entities = static::get($getParams, $cache, $readFromCache);
 		
 		// Check that only one result was returned.
 		if (count($entities) !== 1) {
 			if (!$required && !$entities) return NULL;
-			$message = ts('Expected to get a single %1 from database but got %2 with parameter(s) %3', array(1 => static::$properties->entityType, 2 => count($entities), 3 => CRM_API_Utils::toString($params)));
+			$message = E::ts('Expected to get a single %1 from database but got %2 with parameter(s) %3', array(1 => static::$properties->entityType, 2 => count($entities), 3 => CRM_API_Utils::toString($params)));
 			if (is_string($params) && ctype_digit($params))
-				$message .= ' ' . ts('(ID must be specified as an integer value, not a string value.)');
+				$message .= ' ' . E::ts('(ID must be specified as an integer value, not a string value.)');
 			throw new Exception($message);
 		}
 		
@@ -575,7 +575,7 @@ abstract class CRM_API_Entity {
 		if (is_a($arg, get_called_class())) return $arg;
 		if (is_int($arg) || is_string($arg) && !is_null(static::$properties->defaultStringLookup))
 			return static::getSingle($arg, $required);
-		throw new Exception(ts('%1 is not a valid %2', array(1 => CRM_API_Utils::toString($arg), 2 => static::$properties->entityType)));
+		throw new Exception(E::ts('%1 is not a valid %2', array(1 => CRM_API_Utils::toString($arg), 2 => static::$properties->entityType)));
 	}
 	
 	// Return data about the cache.
@@ -602,7 +602,7 @@ abstract class CRM_API_Entity {
 	protected static function getFromCache($id, $required = FALSE) {
 		if (!array_key_exists($id, static::$properties->lookups['id'])) {
 			if (!$required) return NULL;
-			throw new Exception(ts('%1 is not cached', array(1 => $entity)));
+			throw new Exception(E::ts('%1 is not cached', array(1 => $entity)));
 		}
 		
 		return static::$properties->lookups['id'][$id];
@@ -614,7 +614,7 @@ abstract class CRM_API_Entity {
 		if (is_null($debug)) $debug = CRM_Core_Config::singleton()->debug;
 		
 		if ($action !== 'get' && $readOnlyFields = array_intersect_key($params, static::$properties->readOnlyFields))
-			throw new Exception(ts('Read-only field(s) %1 supplied to API %2 %3', array(1 => implode(', ', $readOnlyFields), 2 => $action, 3 => static::$properties->entityType)));
+			throw new Exception(E::ts('Read-only field(s) %1 supplied to API %2 %3', array(1 => implode(', ', $readOnlyFields), 2 => $action, 3 => static::$properties->entityType)));
 		
 		$apiParams = array('version' => '3');
 		if ($debug) $apiParams['debug'] = 1;
@@ -651,7 +651,7 @@ abstract class CRM_API_Entity {
 			}
 		}
 		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(ts('Error in API call to %1 %2 %3', array(1 => $action, 2 => static::$properties->entityType, 3 => CRM_API_Utils::toString($params))), $apiResult);
+			throw new CRM_API_Exception(E::ts('Error in API call to %1 %2 %3', array(1 => $action, 2 => static::$properties->entityType, 3 => CRM_API_Utils::toString($params))), $apiResult);
 		
 		$apiValues = $apiResult['values'];
 		if ($action === 'get' && $apiValues === FALSE) $apiValues = array();
@@ -659,7 +659,7 @@ abstract class CRM_API_Entity {
 		// If the API has not returned a valid array of results then quit.
 		if (!is_array($apiValues) || $apiValues && !is_array(reset($apiValues))) {
 			if (in_array($action, array('create', 'get')))
-				throw new Exception(ts('API call to %1 %2 %3 returned %4 instead of array of values', array(1 => $action, 2 => static::$properties->entityType, 3 => CRM_API_Utils::toString($params), 4 => $apiValues)));
+				throw new Exception(E::ts('API call to %1 %2 %3 returned %4 instead of array of values', array(1 => $action, 2 => static::$properties->entityType, 3 => CRM_API_Utils::toString($params), 4 => $apiValues)));
 			return;
 		}
 		
@@ -708,7 +708,7 @@ abstract class CRM_API_Entity {
 		$fieldSets = static::callApi($action, $params);
 		if (count($fieldSets) !== 1) {
 			if (!$required && !$fieldSets) return NULL;
-			throw new Exception(ts('API call to %1 %2 %3 returned %4 values instead of the expected one', array(1 => $action, 2 => static::$properties->entityType, 3 => CRM_API_Utils::toString($params), 4 => count($entities))));
+			throw new Exception(E::ts('API call to %1 %2 %3 returned %4 values instead of the expected one', array(1 => $action, 2 => static::$properties->entityType, 3 => CRM_API_Utils::toString($params), 4 => count($entities))));
 		}
 		return reset($fieldSets);
 	}
@@ -755,7 +755,7 @@ abstract class CRM_API_Entity {
 		// Check for missing fields.
 		$missingFields = array_diff_key($params, $fields);
 		if ($missingFields)
-			throw new Exception(ts('Error in %1 API call: Field(s) %2 not present in results', array(1 => static::$properties->entityType, 2 => CRM_API_Utils::toString($missingFields))));
+			throw new Exception(E::ts('Error in %1 API call: Field(s) %2 not present in results', array(1 => static::$properties->entityType, 2 => CRM_API_Utils::toString($missingFields))));
 		
 		$unequalFieldsSupplied = array();
 		$unequalFieldsReturned = array();
@@ -777,7 +777,7 @@ abstract class CRM_API_Entity {
 		}
 		
 		if ($unequalFieldsSupplied)
-			throw new Exception(ts('Error in %1 API call: Values of field(s) returned %2 did not match values of parameter(s) supplied %3', array(1 => static::$properties->entityType, 2 => CRM_API_Utils::toString($unequalFieldsReturned), 3 => CRM_API_Utils::toString($unequalFieldsSupplied))));
+			throw new Exception(E::ts('Error in %1 API call: Values of field(s) returned %2 did not match values of parameter(s) supplied %3', array(1 => static::$properties->entityType, 2 => CRM_API_Utils::toString($unequalFieldsReturned), 3 => CRM_API_Utils::toString($unequalFieldsSupplied))));
 	}
 	
 	// Filter and normalise fields retrieved from the data access layer.
@@ -827,7 +827,7 @@ abstract class CRM_API_Entity {
 				if (is_int($value) || is_float($value))
 					$value = (string)$value;
 				elseif (!array_key_exists($field, static::$properties->fieldsMayNotMatchApiParams))
-					throw new Exception(ts('Invalid value %1 for string field %2', array(1 => CRM_API_Utils::toString($value), $field)));
+					throw new Exception(E::ts('Invalid value %1 for string field %2', array(1 => CRM_API_Utils::toString($value), $field)));
 			}
 		}
 		
@@ -840,7 +840,7 @@ abstract class CRM_API_Entity {
 				elseif (CRM_API_Utils::isSignedIntString($value))
 					$value = (int)$value;
 				else
-					throw new Exception(ts('Invalid value %1 for integer field %2', array(1 => CRM_API_Utils::toString($value), $field)));
+					throw new Exception(E::ts('Invalid value %1 for integer field %2', array(1 => CRM_API_Utils::toString($value), $field)));
 			}
 		}
 		
@@ -855,7 +855,7 @@ abstract class CRM_API_Entity {
 				elseif ($value === 1 || $value === '1')
 					$value = TRUE;
 				else
-					throw new Exception(ts('Invalid value %1 for boolean field %2', array(1 => CRM_API_Utils::toString($value), $field)));
+					throw new Exception(E::ts('Invalid value %1 for boolean field %2', array(1 => CRM_API_Utils::toString($value), $field)));
 			}
 		}
 		
@@ -868,7 +868,7 @@ abstract class CRM_API_Entity {
 				elseif (is_int($value) || is_string($value) && is_numeric($value))
 					$value = (float)$value;
 				else
-					throw new Exception(ts('Invalid value %1 for real number field %2', array(1 => CRM_API_Utils::toString($value), $field)));
+					throw new Exception(E::ts('Invalid value %1 for real number field %2', array(1 => CRM_API_Utils::toString($value), $field)));
 			}
 		}
 		
@@ -881,7 +881,7 @@ abstract class CRM_API_Entity {
 				elseif (is_string($value))
 					$value = new DateTime($value);
 				else
-					throw new Exception(ts('Invalid value %1 for DateTime field %2', array(1 => CRM_API_Utils::toString($value), $field)));
+					throw new Exception(E::ts('Invalid value %1 for DateTime field %2', array(1 => CRM_API_Utils::toString($value), $field)));
 			}
 		}
 		
@@ -891,7 +891,7 @@ abstract class CRM_API_Entity {
 			foreach (static::$properties->fieldsByType['array'] as $field) {
 				if (isset($fields[$field]) && !is_array($fields[$field])) {
 					$value =& $fields[$field];
-					throw new Exception(ts('Invalid value %1 for array field %2', array(1 => CRM_API_Utils::toString($value), $field)));
+					throw new Exception(E::ts('Invalid value %1 for array field %2', array(1 => CRM_API_Utils::toString($value), $field)));
 				}
 			}
 		}
@@ -907,14 +907,14 @@ abstract class CRM_API_Entity {
 	// Check that an array of parameters does not contain an ID.
 	protected static function assertIdNotSupplied($params) {
 		if (array_key_exists('id', $params))
-			throw new Exception(ts('Parameters %1 should not contain an ID', array(1 => CRM_API_Utils::toString($params))));
+			throw new Exception(E::ts('Parameters %1 should not contain an ID', array(1 => CRM_API_Utils::toString($params))));
 	}
 	
 	// Check that the supplied set of fields contains the fields required for the type of entity.
 	protected static function assertRequiredFields($fields, $requiredFields) {
 		$missingFields = array_keys(array_diff_key(array_fill_keys($requiredFields, NULL), $fields));
 		if ($missingFields)
-			throw new Exception(ts('Required field(s) %1 are missing for %2', array(1 => implode(', ', $missingFields), 2 => static::$properties->entityType)));
+			throw new Exception(E::ts('Required field(s) %1 are missing for %2', array(1 => implode(', ', $missingFields), 2 => static::$properties->entityType)));
 	}
 	
 	// Derive the value under which an entity is cached in a particular lookup.

@@ -60,14 +60,14 @@ class CRM_API_EntityType {
 			'canUndelete' => FALSE
 		);
 		if (array_diff_key($properties, $defaultProperties))
-			throw new Exception(ts('Invalid properties: %1', array(1 => implode(', ', array_keys(array_diff_key($properties, $defaultProperties))))));
+			throw new Exception(E::ts('Invalid properties: %1', array(1 => implode(', ', array_keys(array_diff_key($properties, $defaultProperties))))));
 		$properties += $defaultProperties;
 		
 		// Derive the entity type from the name of the calling class.
 		$backtrace = debug_backtrace();
 		$class = $backtrace[1]['class'];
 		if (!is_subclass_of($class, 'CRM_API_Entity') || !preg_match('/^CRM_((?:[A-Za-z0-9]+_)*)API_([A-Za-z0-9]+)$/u', $class, $matches))
-			throw new Exception(ts('Class %1 does not represent a valid API entity type', array(1 => $class)));
+			throw new Exception(E::ts('Class %1 does not represent a valid API entity type', array(1 => $class)));
 		$this->entityType = $matches[2];
 		
 		// Determine the database table.
@@ -92,7 +92,7 @@ class CRM_API_EntityType {
 				}
 			}
 			if (!$this->daoClass)
-				throw new Exception(ts('Cannot determine the BAO/DAO class for entity type %1', array(1 => $this->entityType)));
+				throw new Exception(E::ts('Cannot determine the BAO/DAO class for entity type %1', array(1 => $this->entityType)));
 		}
 		
 		// Prepare the lookups.
@@ -103,7 +103,7 @@ class CRM_API_EntityType {
 		
 		// Group fields by type.
 		if (array_diff_key($properties['fieldsByType'], $this->fieldsByType)) {
-			throw new Exception(ts('Invalid data type(s): %1', array(1 => implode(', ', array_keys(array_diff_key($properties['fieldsByType'], $this->fieldsByType))))));
+			throw new Exception(E::ts('Invalid data type(s): %1', array(1 => implode(', ', array_keys(array_diff_key($properties['fieldsByType'], $this->fieldsByType))))));
 		}
 		$explicitlyTypedFields = array_reduce($properties['fieldsByType'], function($fields, $fieldsOfType) {return $fields + array_fill_keys($fieldsOfType, NULL);}, array());
 		
@@ -137,7 +137,7 @@ class CRM_API_EntityType {
 			
 			// Infer the field's PHP data type from the corresponding database column's type.
 			if (!array_key_exists($dao->DATA_TYPE, $dbTypeMap) || !array_key_exists($dbTypeMap[$dao->DATA_TYPE], $this->fieldsByType))
-				throw new Exception(ts('Database table %1, column %2 has data type %3, which is not recognised', array(1 => $this->dbTable, 2 => $column, 3 => $dao->DATA_TYPE)));
+				throw new Exception(E::ts('Database table %1, column %2 has data type %3, which is not recognised', array(1 => $this->dbTable, 2 => $column, 3 => $dao->DATA_TYPE)));
 			$this->fieldsByType[$dbTypeMap[$dao->DATA_TYPE]][] = $column;
 		}
 		$dao->free();
@@ -148,7 +148,7 @@ class CRM_API_EntityType {
 		// Check that special fields are actually valid fields.
 		foreach (array('displayFields', 'fieldsMayNotMatchApiParams', 'paramsRequiredByCreate', 'readOnlyFields') as $property) {
 			if (array_diff_key(array_fill_keys($properties[$property], NULL), $this->validFields))
-				throw new Exception(ts('Unknown fields: %1', array(1 => implode(', ', array_diff($properties[$property], array_keys($this->validFields))))));
+				throw new Exception(E::ts('Unknown fields: %1', array(1 => implode(', ', array_diff($properties[$property], array_keys($this->validFields))))));
 		}
 		
 		// Copy some properties directly to the object.

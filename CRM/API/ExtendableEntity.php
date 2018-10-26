@@ -209,13 +209,13 @@ abstract class CRM_API_ExtendableEntity extends CRM_API_Entity {
 		
 		if (is_a($customField, 'CRM_API_CustomField')) {
 			if ($debug && !$this->isExtendedBy($customField->getGroup()))
-				throw new Exception(ts('%1 does not extend %2', array(1 => $customField, 2 => static::$properties->entityType)));
+				throw new Exception(E::ts('%1 does not extend %2', array(1 => $customField, 2 => static::$properties->entityType)));
 			return $customField;
 		}
 		
 		if (is_int($customField)) return CRM_API_CustomField::getSingle($customField);
 		if (is_string($customField)) return $this->getMatchingCustomField($customField);
-		throw new Exception(ts('%1 is not a valid custom field', array(1 => $customField)));
+		throw new Exception(E::ts('%1 is not a valid custom field', array(1 => $customField)));
 	}
 	
 	// TODO: Sort out the multiple, duplicated functions (static and non-static) for matching custom field by name,
@@ -228,7 +228,7 @@ abstract class CRM_API_ExtendableEntity extends CRM_API_Entity {
 				$matchingCustomFields[] = $customField;
 		if (count($matchingCustomFields) === 0 && !$required) return NULL;
 		if (count($matchingCustomFields) !== 1)
-			throw new Exception(ts('%1 matching custom fields named "%2" for %3', array(1 => count($matchingCustomFields), 2 => $customFieldName, 3 => CRM_API_Utils::toString($this))));
+			throw new Exception(E::ts('%1 matching custom fields named "%2" for %3', array(1 => count($matchingCustomFields), 2 => $customFieldName, 3 => CRM_API_Utils::toString($this))));
 		return reset($matchingCustomFields);
 	}
 	
@@ -261,7 +261,7 @@ abstract class CRM_API_ExtendableEntity extends CRM_API_Entity {
 				$matchingCustomFields[] = $aCustomField;
 		if (count($matchingCustomFields) === 0 && !$required) return NULL;
 		if (count($matchingCustomFields) !== 1)
-			throw new Exception(ts('%1 matching custom fields named "%2" for %3', array(1 => count($matchingCustomFields), 2 => $customField, 3 => static::$properties->entityType)));
+			throw new Exception(E::ts('%1 matching custom fields named "%2" for %3', array(1 => count($matchingCustomFields), 2 => $customField, 3 => static::$properties->entityType)));
 		return reset($matchingCustomFields);
 	}
 	
@@ -293,7 +293,7 @@ abstract class CRM_API_ExtendableEntity extends CRM_API_Entity {
 	
 	protected static function callCustomValueApiSet($id, $customField, &$value) {
 		if ($customField->getGroup()->is_multiple)
-			throw new Exception(ts('Can\'t set multi-value %1 - use add and update functions instead', array(1 => $customField)));
+			throw new Exception(E::ts('Can\'t set multi-value %1 - use add and update functions instead', array(1 => $customField)));
 		
 		$value = static::serialiseCustomValue($customField, $value);
 		static::callCustomValueApi('create', array('entity_id' => $id, $customField->apiKey => $value));
@@ -301,7 +301,7 @@ abstract class CRM_API_ExtendableEntity extends CRM_API_Entity {
 	
 	protected static function callCustomValueApiMultiAdd($id, $customField, &$values) {
 		if (!$customField->getGroup()->is_multiple)
-			throw new Exception(ts('Can\'t add values to %1 as it is not a multi-value field', array(1 => $customField)));
+			throw new Exception(E::ts('Can\'t add values to %1 as it is not a multi-value field', array(1 => $customField)));
 		if (!is_array($values)) $values = array($values);
 		
 		$params = array('entity_id' => $id);
@@ -315,7 +315,7 @@ abstract class CRM_API_ExtendableEntity extends CRM_API_Entity {
 	
 	protected static function callCustomValueApiMultiUpdate($id, $customField, &$values) {
 		if (!$customField->getGroup()->is_multiple)
-			throw new Exception(ts('Can\'t update values in %1 as it is not a multi-value field', array(1 => $customField)));
+			throw new Exception(E::ts('Can\'t update values in %1 as it is not a multi-value field', array(1 => $customField)));
 		
 		$params = array('entity_id' => $id);
 		foreach ($values as $recordId => &$value) {
@@ -328,7 +328,7 @@ abstract class CRM_API_ExtendableEntity extends CRM_API_Entity {
 	protected static function callCustomValueApi($action, $params) {
 		$apiResult = civicrm_api('CustomValue', $action, array('version' => '3') + $params);
 		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(ts('Error in API call to %1 CustomValue with parameters %2', array(1 => $action, 2 => $params)), $apiResult);
+			throw new CRM_API_Exception(E::ts('Error in API call to %1 CustomValue with parameters %2', array(1 => $action, 2 => $params)), $apiResult);
 		return $apiResult['values'];
 	}
 	

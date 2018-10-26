@@ -28,7 +28,7 @@ class CRM_API_ParentChildRelationship {
 	
 	public function __get($member) {
 		if (in_array($member, self::$readOnlyMembers)) return $this->$member;
-		throw new Exception(ts('Parent-child relationship does not have a member variable called "%1"', array(1 => $member)));
+		throw new Exception(E::ts('Parent-child relationship does not have a member variable called "%1"', array(1 => $member)));
 	}
 	
 	public function __isset($member) {
@@ -41,7 +41,7 @@ class CRM_API_ParentChildRelationship {
 	
 	// Create an entry in the cache for the specified parent entity, over-writing any previous data.
 	public function cacheParent($parentId) {
-		if (!$parentId) throw new Exception(ts('Attempt to cache a non-existent parent entity'));
+		if (!$parentId) throw new Exception(E::ts('Attempt to cache a non-existent parent entity'));
 		foreach ($this->childCache as &$lookup) $lookup[$parentId] = array();
 	}
 	
@@ -76,7 +76,7 @@ class CRM_API_ParentChildRelationship {
 				if ($lookupValue !== '') {
 					if (is_string($lookupValue)) $lookupValue = mb_strtolower($lookupValue);
 					if (array_key_exists($lookupValue, $lookup[$parentId]))
-						throw new Exception(ts('%1 %2 has more than one %3 with a %4 of %5', array(1 => $this->parentClass, 2 => $parentId, 3 => $this->childClass, 4 => $lookupField, 5 => $lookupValue)));
+						throw new Exception(E::ts('%1 %2 has more than one %3 with a %4 of %5', array(1 => $this->parentClass, 2 => $parentId, 3 => $this->childClass, 4 => $lookupField, 5 => $lookupValue)));
 					
 					if (isset($insertPosition)) {
 						// Insert child in correct position so as to maintain ordering.
@@ -103,7 +103,7 @@ class CRM_API_ParentChildRelationship {
 				if ($lookupValue !== '') {
 					if (is_string($lookupValue)) $lookupValue = mb_strtolower($lookupValue);
 					if (!array_key_exists($lookupValue, $lookup[$parentId]))
-						throw new Exception(ts('%1 %2 does not have a %3 with a %4 of %5', array(1 => $this->parentClass, 2 => $parentId, 3 => $this->childClass, 4 => $lookupField, 5 => $lookupValue)));
+						throw new Exception(E::ts('%1 %2 does not have a %3 with a %4 of %5', array(1 => $this->parentClass, 2 => $parentId, 3 => $this->childClass, 4 => $lookupField, 5 => $lookupValue)));
 					unset($lookup[$parentId][$lookupValue]);
 				}
 			}
@@ -127,12 +127,12 @@ class CRM_API_ParentChildRelationship {
 		if (func_num_args() === 3 && is_bool($field)) {$required = $field; $field = NULL;}
 		$this->assertParentCached($parentId);
 		if (is_null($value) || $value === '')
-			throw new Exception(ts('Cannot use a null/empty value to look up a child %1', array(1 => $this->childClass)));
+			throw new Exception(E::ts('Cannot use a null/empty value to look up a child %1', array(1 => $this->childClass)));
 		$field = $this->resolveLookupField($value, $field);
 		if (is_string($value)) $value = mb_strtolower($value);
 		if (!array_key_exists($value, $this->childCache[$field][$parentId])) {
 			if ($required)
-				throw new Exception(ts('%1 %2 does not have a %3 with %4 of "%5"', array(1 => $this->parentClass, 2 => $parentId, 3 => $this->childClass, 4 => $field, 5 => $value)));
+				throw new Exception(E::ts('%1 %2 does not have a %3 with %4 of "%5"', array(1 => $this->parentClass, 2 => $parentId, 3 => $this->childClass, 4 => $field, 5 => $value)));
 			return NULL;
 		}
 		return $this->childCache[$field][$parentId][$value];
@@ -145,7 +145,7 @@ class CRM_API_ParentChildRelationship {
 			elseif (!is_null($this->stringLookupField) && is_string($value))
 				$field = $this->stringLookupField;
 			else
-				throw new Exception(ts('There is no default lookup that can be used with the value %1', array(1 => $value)));
+				throw new Exception(E::ts('There is no default lookup that can be used with the value %1', array(1 => $value)));
 		else
 			$this->assertLookupField($field);
 		return $field;
@@ -153,17 +153,17 @@ class CRM_API_ParentChildRelationship {
 	
 	private function assertIsChildEntity($child) {
 		if (!is_a($child, $this->childClass))
-			throw new Exception(ts('%1 is not %2', array(1 => $child, 2 => $this->childClass)));
+			throw new Exception(E::ts('%1 is not %2', array(1 => $child, 2 => $this->childClass)));
 	}
 	
 	private function assertLookupField($field) {
 		if (!$this->hasLookupField($field))
-			throw new Exception(ts('Child %1 cache is not indexed by "%2"', array(1 => $this->childClass, 2 => $field)));
+			throw new Exception(E::ts('Child %1 cache is not indexed by "%2"', array(1 => $this->childClass, 2 => $field)));
 	}
 	
 	private function assertParentCached($parentId) {
 		if (!$this->isParentCached($parentId))
-			throw new Exception(ts('%1 %2 is not in relationship cache', array(1 => $this->parentClass, 2 => $parentId)));
+			throw new Exception(E::ts('%1 %2 is not in relationship cache', array(1 => $this->parentClass, 2 => $parentId)));
 	}
 }
 

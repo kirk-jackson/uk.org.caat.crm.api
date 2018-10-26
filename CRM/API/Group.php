@@ -16,7 +16,7 @@ class CRM_API_Group extends CRM_API_ExtendableEntity {
 			'group_id' => $this->id
 		));
 		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(ts('Failed to retrieve contacts in %1', array(1 => $this)), $apiResult);
+			throw new CRM_API_Exception(E::ts('Failed to retrieve contacts in %1', array(1 => $this)), $apiResult);
 		
 		$contactIds = array();
 		foreach ($apiResult['values'] as $fields) $contactIds[] = $fields['contact_id'];

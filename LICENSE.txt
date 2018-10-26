@@ -1,5 +1,5 @@
 Package: uk.org.caat.crm.api
-Copyright (C) 2014, Kirk Jackson <kirk@caat.org.uk>
+Copyright (C) 2014-2018, Kirk Jackson <kirk@caat.org.uk>
 Licensed under the GNU Affero Public License 3.0 (below).
 
 -------------------------------------------------------------------------------

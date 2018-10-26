@@ -49,7 +49,7 @@ abstract class CRM_API_TaggableExtendableEntity extends CRM_API_ExtendableEntity
 			'tag_id' => $tagId
 		));
 		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(ts('Failed to add tag %1 to %2 %3', array(1 => $tagId, 2 => static::$properties->entityType, 3 => $entityId)), $apiResult);
+			throw new CRM_API_Exception(E::ts('Failed to add tag %1 to %2 %3', array(1 => $tagId, 2 => static::$properties->entityType, 3 => $entityId)), $apiResult);
 		
 		if (array_key_exists($entityId, static::$properties->tagIdCache))
 			static::$properties->tagIdCache[$entityId][$tagId] = NULL;
@@ -65,7 +65,7 @@ abstract class CRM_API_TaggableExtendableEntity extends CRM_API_ExtendableEntity
 			'tag_id' => $tagId
 		));
 		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(ts('Failed to remove tag %1 from %2 %3', array(1 => $tagId, 2 => static::$properties->entityType, 3 => $entityId)), $apiResult);
+			throw new CRM_API_Exception(E::ts('Failed to remove tag %1 from %2 %3', array(1 => $tagId, 2 => static::$properties->entityType, 3 => $entityId)), $apiResult);
 		
 		if (array_key_exists($entityId, static::$properties->tagIdCache))
 			unset(static::$properties->tagIdCache[$entityId][$tagId]);
@@ -82,7 +82,7 @@ abstract class CRM_API_TaggableExtendableEntity extends CRM_API_ExtendableEntity
 			'contact_id' => $contactId
 		));
 		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(ts('Failed to retrieve tags for contact %1', array(1 => $contactId)), $apiResult);
+			throw new CRM_API_Exception(E::ts('Failed to retrieve tags for contact %1', array(1 => $contactId)), $apiResult);
 		
 		$tagIds = array();
 		foreach ($apiResult['values'] as $fields) $tagIds[] = $fields['tag_id'];

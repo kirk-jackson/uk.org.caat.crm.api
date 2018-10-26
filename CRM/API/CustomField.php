@@ -15,7 +15,7 @@ class CRM_API_CustomField extends CRM_API_Entity {
 	
 	public function getOptionGroup() {
 		if (!$this->isMultipleChoice())
-			throw new Exception(ts('%1 is not a multiple-choice field so it doesn\'t have an option group', array(1 => $this)));
+			throw new Exception(E::ts('%1 is not a multiple-choice field so it doesn\'t have an option group', array(1 => $this)));
 		return CRM_API_OptionGroup::getSingle($this->option_group_id);
 	}
 	
@@ -137,7 +137,7 @@ class CRM_API_CustomField extends CRM_API_Entity {
 				return $this->normaliseAtomicValue($optionValue->value, $getObjects, TRUE);
 		}
 		
-		throw new Exception(ts('Invalid %1 custom value %2', array(1 => $this->data_type, 2 => CRM_API_Utils::toString($value))));
+		throw new Exception(E::ts('Invalid %1 custom value %2', array(1 => $this->data_type, 2 => CRM_API_Utils::toString($value))));
 	}
 	
 	public static function getByName($name) {

@@ -8,7 +8,7 @@ class CRM_API_FieldSet {
 	
 	public function __construct($fields) {
 		if (!array_key_exists('id', $fields) || !is_int($fields['id']))
-			throw new Exception(ts('Fields do not include a valid integer ID: %1', array(1 => CRM_API_Utils::toString($fields))));
+			throw new Exception(E::ts('Fields do not include a valid integer ID: %1', array(1 => CRM_API_Utils::toString($fields))));
 		
 		// Separate the ID.
 		$this->id = $fields['id'];

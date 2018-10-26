@@ -19,7 +19,7 @@ class CRM_API_Participant extends CRM_API_ExtendableEntity {
 				return in_array(CRM_API_Event::getSingle($this->event_id)->event_type_id, $customGroup->extends_entity_column_value);
 			
 			default:
-				throw new Exception(ts('Unexpected participant custom data type "%1"', array(1 => $participantCustomDataTypeName)));
+				throw new Exception(E::ts('Unexpected participant custom data type "%1"', array(1 => $participantCustomDataTypeName)));
 		}
 	}
 	
