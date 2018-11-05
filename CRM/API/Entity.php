@@ -394,6 +394,24 @@ abstract class CRM_API_Entity {
 		foreach (static::$properties->lookups['id'] as $entity) $entity->uncache();
 	}
 	
+	// Uncache all contact entities and entities that depend on them.
+	// Helps avoid memory overflow when importing many contacts.
+	final public static function uncacheAllContactData() {
+		foreach ([
+			'Contact',
+			'Email', 'Phone', 'Address', 'Note',
+			'SubscriptionHistory',
+			'Relationship',
+			'ActivityContact', 'Activity',
+			'ContributionRecur', 'Contribution', 'ContributionSoft',
+			'Participant',
+			'MailingRecipients', 'MailingEventQueue', 'MailingEventDelivered'
+		] as $entityType) {
+			$class = 'CRM_API_' . $entityType;
+			$class::uncacheAll();
+		}
+	}
+	
 	// Convert a mixed-type argument to an entity ID. Useful for flexible arguments in public methods.
 	public static function getId($arg, $required = TRUE) {
 		if (is_int($arg)) return $arg; // Assume it's a valid ID to avoid a potentially unnecessary database query.
@@ -416,7 +434,6 @@ abstract class CRM_API_Entity {
 			$diagnostics[$childClass] = count($childClass::$properties->lookups['id']);
 		return $diagnostics;
 	}
-	
 	
 	// Create a new object to represent an entity in the database.
 	protected function __construct($fieldSet, $cache, $mayHaveChildren = TRUE) {
