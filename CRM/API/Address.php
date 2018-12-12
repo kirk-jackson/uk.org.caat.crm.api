@@ -6,12 +6,9 @@ class CRM_API_Address extends CRM_API_ExtendableEntity {
 	protected static $properties;
 	
 	public static function create($params, $cache = NULL) {
-		static $fieldsNotInheritedFromMaster;
-		if (is_null($fieldsNotInheritedFromMaster))
-			$fieldsNotInheritedFromMaster = array_fill_keys(array('location_type_id', 'is_primary', 'is_billing'), NULL);
-		
 		// If this address is shared with another contact, then copy address fields from the master address.
 		if (!empty($params['master_id'])) {
+			$fieldsNotInheritedFromMaster = array_fill_keys(['location_type_id', 'is_primary', 'is_billing'], NULL);
 			$masterAddress = CRM_API_Address::getSingle((int)$params['master_id'], TRUE, $cache);
 			foreach (array_diff_key($masterAddress->fields, $params, $fieldsNotInheritedFromMaster) as $masterField => $masterValue) {
 				if (!is_null($masterValue) && trim($masterValue) !== '')
