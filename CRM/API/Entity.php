@@ -961,6 +961,12 @@ abstract class CRM_API_Entity {
 		
 		// If lookup fields are not returned by API get, they should be assumed to be NULL.
 		static::$properties->fillInFields += array_fill_keys(array_merge(array_filter(array($intLookupField, $stringLookupField, $parentIdField, $parentDbTableField)), $extraLookupFields), NULL);
+		
+		// There's no need to resupply the parent ID field when updating,
+		// as there's no danger of it being reset if it's not supplied.
+		// When updating the 'is_primary' field of one of a Drupal's user's Email entities,
+		// supplying the 'contact_id' field can actually cause an error.
+		unset(static::$properties->persistFields[$parentIdField]);
 	}
 	
 	// Set up the characteristics of a particular entity type.
