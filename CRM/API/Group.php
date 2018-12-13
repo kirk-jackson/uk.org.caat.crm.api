@@ -13,12 +13,11 @@ class CRM_API_Group extends CRM_API_ExtendableEntity {
 	}
 	
 	public function getContactIds() {
-		$apiResult = civicrm_api('GroupContact', 'get', array(
-			'version' => '3',
-			'group_id' => $this->id
-		));
-		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(E::ts('Failed to retrieve contacts in %1', array(1 => $this)), $apiResult);
+		try {
+			$apiResult = civicrm_api3('GroupContact', 'get', ['group_id' => $this->id]);
+		} catch (CiviCRM_API3_Exception $e) {
+			throw new CRM_API_Exception(E::ts('Failed to retrieve contacts in %1', [1 => $this]), $e);
+		}
 		
 		$contactIds = array();
 		foreach ($apiResult['values'] as $fields) $contactIds[] = $fields['contact_id'];
@@ -26,15 +25,15 @@ class CRM_API_Group extends CRM_API_ExtendableEntity {
 	}
 	
 	protected static function initProperties() {
-		static::$properties = new CRM_API_EntityType(array(
-			'lookups' => array('name', 'title'),
+		static::$properties = new CRM_API_EntityType([
+			'lookups' => ['name', 'title'],
 			'defaultStringLookup' => 'title',
-			'displayFields' => array('title'),
-			'fieldsByType' => array(
-				'array' => array('group_type')
-			),
-			'fieldsMayNotMatchApiParams' => array('where_clause', 'select_tables', 'where_tables')
-		));
+			'displayFields' => ['title'],
+			'fieldsByType' => [
+				'array' => ['group_type']
+			],
+			'fieldsMayNotMatchApiParams' => ['where_clause', 'select_tables', 'where_tables']
+		]);
 	}
 }
 

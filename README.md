@@ -540,7 +540,7 @@ $activityTypeOptionGroup = CRM_API_OptionGroup::getSingle('activity_type');
 $activityTypeId = $activityTypeOptionGroup->getValue('Meeting')->value;
 ```
 This makes the code easier to read than using hard-coded ID numbers.
-In general, code should not contain hard-coded ID numbers, at all, ever.
+(It is bad practice to use literal ID numbers in code.)
 
 ## Error handling
 When any error is encountered, an exception is thrown.

@@ -35,14 +35,15 @@ class CRM_API_Contact extends CRM_API_TaggableExtendableEntity {
 		$groupId = CRM_API_Group::getId($group);
 		
 		if (is_null($dateTime)) {
-			$apiResult = civicrm_api('GroupContact', 'create', array(
-				'version' => '3',
-				'contact_id' => $contactId,
-				'group_id' => $groupId,
-				'status' => $status
-			));
-			if (civicrm_error($apiResult))
-				throw new CRM_API_Exception(E::ts('Failed to set contact %1\'s status in group %2 to %3', array(1 => $contactId, 2 => $groupId, 3 => $status)), $apiResult);
+			try {
+				$apiResult = civicrm_api3('GroupContact', 'create', array(
+					'contact_id' => $contactId,
+					'group_id' => $groupId,
+					'status' => $status
+				));
+			} catch (CiviCRM_API3_Exception $e) {
+				throw new CRM_API_Exception(E::ts('Failed to set contact %1\'s status in group %2 to %3', [1 => $contactId, 2 => $groupId, 3 => $status]), $e);
+			}
 			
 			static::updateGroupIdCache($contactId, $groupId, $status);
 		} else {
@@ -126,13 +127,14 @@ class CRM_API_Contact extends CRM_API_TaggableExtendableEntity {
 		if ($readFromCache && array_key_exists($contactId, static::$groupIdCache) && array_key_exists($status, static::$groupIdCache[$contactId]))
 			return array_keys(static::$groupIdCache[$contactId][$status]);
 		
-		$apiResult = civicrm_api('GroupContact', 'get', array(
-			'version' => '3',
-			'contact_id' => $contactId,
-			'status' => $status
-		));
-		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(E::ts('Failed to retrieve groups for which contact %1 is %2', array(1 => $contactId, 2 => $status)), $apiResult);
+		try {
+			$apiResult = civicrm_api3('GroupContact', 'get', array(
+				'contact_id' => $contactId,
+				'status' => $status
+			));
+		} catch (CiviCRM_API3_Exception $e) {
+			throw new CRM_API_Exception(E::ts('Failed to retrieve groups for which contact %1 is %2', [1 => $contactId, 2 => $status]), $e);
+		}
 		
 		foreach ($apiResult['values'] as $fields)
 			$groupIds[] = $fields['group_id'];

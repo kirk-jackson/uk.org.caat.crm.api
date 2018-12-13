@@ -636,9 +636,8 @@ abstract class CRM_API_Entity {
 		if ($action !== 'get' && $readOnlyFields = array_intersect_key($params, static::$properties->readOnlyFields))
 			throw new Exception(E::ts('Read-only field(s) %1 supplied to API %2 %3', array(1 => implode(', ', $readOnlyFields), 2 => $action, 3 => static::$properties->entityType)));
 		
-		$apiParams = array('version' => '3');
-		if ($debug) $apiParams['debug'] = 1;
-		$apiParams += static::serialiseParams($params);
+		$apiParams = static::serialiseParams($params);
+		$apiParams += ['debug' => $debug];
 		
 		if ($action === 'get') {
 			// Override the default row limit.
@@ -658,20 +657,25 @@ abstract class CRM_API_Entity {
 			$apiResult = static::callApiBasicCreate($apiParams);
 		} else {
 			// Call the specific API.
-			$apiResult = civicrm_api(static::$properties->entityType, $action, $apiParams);
-			if (civicrm_error($apiResult) && $apiResult['error_code'] === 'not-found') {
-				if (mb_strpos(static::$properties->daoClass, '_BAO_') === FALSE && $action === 'create') {
-					// If the entity's DAO class is actually a BAO class, the generic create function won't work, so use fallback function instead.
-					$apiResult = static::callApiBasicCreate($apiParams);
+			try {
+				$apiResult = civicrm_api3(static::$properties->entityType, $action, $apiParams);
+			} catch (CiviCRM_API3_Exception $e) {
+				if ($e->getErrorCode() === 'not-found') {
+					if (mb_strpos(static::$properties->daoClass, '_BAO_') === FALSE && $action === 'create') {
+						// If the entity's DAO class is actually a BAO class, the generic create function won't work, so use fallback function instead.
+						$apiResult = static::callApiBasicCreate($apiParams);
+					} else {
+						// Call the generic API.
+						$apiFunction = '_civicrm_api3_basic_' . $action;
+						$apiResult = $apiFunction(static::$properties->daoClass, $apiParams);
+						if (civicrm_error($apiResult))
+							throw new Exception(E::ts('Error in API call to %1 %2 %3', [1 => $action, 2 => static::$properties->entityType, 3 => CRM_API_Utils::toString($params)]));
+					}
 				} else {
-					// Call the generic API.
-					$apiFunction = '_civicrm_api3_basic_' . $action;
-					$apiResult = $apiFunction(static::$properties->daoClass, $apiParams);
+					throw new CRM_API_Exception(E::ts('Error in API call to %1 %2 %3', [1 => $action, 2 => static::$properties->entityType, 3 => CRM_API_Utils::toString($params)]), $e);
 				}
 			}
 		}
-		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(E::ts('Error in API call to %1 %2 %3', array(1 => $action, 2 => static::$properties->entityType, 3 => CRM_API_Utils::toString($params))), $apiResult);
 		
 		$apiValues = $apiResult['values'];
 		if ($action === 'get' && $apiValues === FALSE) $apiValues = array();
@@ -718,9 +722,9 @@ abstract class CRM_API_Entity {
 		$dao->save();
 		CRM_Utils_Hook::post($hook, static::$properties->entityType, $dao->id, $dao);
 		
-		$fields = array();
+		$fields = [];
 		_civicrm_api3_object_to_array($dao, $fields);
-		return civicrm_api3_create_success(array($dao->id => $fields), $params, $entity, 'create', $dao);
+		return civicrm_api3_create_success([$dao->id => $fields], $params, $entity, 'create', $dao);
 	}
 	
 	// Call CiviCRM's native API expecting a single entity to be returned.
@@ -753,7 +757,7 @@ abstract class CRM_API_Entity {
 		foreach ($params as $param => &$value) {
 			// Ignore options, API chaining parameters and fields known to be unreliable.
 			if (
-				$param === 'options' ||
+				in_array($param, ['options', 'debug']) ||
 				strncmp($param, 'api.', 4) === 0 ||
 				array_key_exists($param, static::$properties->fieldsMayNotMatchApiParams) ||
 				strncmp($param, 'custom_', 7) === 0 ||

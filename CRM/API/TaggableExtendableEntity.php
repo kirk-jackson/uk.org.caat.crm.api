@@ -44,14 +44,15 @@ abstract class CRM_API_TaggableExtendableEntity extends CRM_API_ExtendableEntity
 	public static function tagId($entityId, $tag) {
 		$tagId = CRM_API_Tag::getId($tag);
 		
-		$apiResult = civicrm_api('EntityTag', 'create', array(
-			'version' => '3',
-			'entity_table' => static::$properties->dbTable,
-			'entity_id' => $entityId,
-			'tag_id' => $tagId
-		));
-		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(E::ts('Failed to add tag %1 to %2 %3', array(1 => $tagId, 2 => static::$properties->entityType, 3 => $entityId)), $apiResult);
+		try {
+			$apiResult = civicrm_api3('EntityTag', 'create', array(
+				'entity_table' => static::$properties->dbTable,
+				'entity_id' => $entityId,
+				'tag_id' => $tagId
+			));
+		} catch (CiviCRM_API3_Exception $e) {
+			throw new CRM_API_Exception(E::ts('Failed to add tag %1 to %2 %3', [1 => $tagId, 2 => static::$properties->entityType, 3 => $entityId]), $e);
+		}
 		
 		if (array_key_exists($entityId, static::$properties->tagIdCache))
 			static::$properties->tagIdCache[$entityId][$tagId] = NULL;
@@ -60,14 +61,15 @@ abstract class CRM_API_TaggableExtendableEntity extends CRM_API_ExtendableEntity
 	public static function untagId($entityId, $tag) {
 		$tagId = CRM_API_Tag::getId($tag);
 		
-		$apiResult = civicrm_api('EntityTag', 'delete', array(
-			'version' => '3',
-			'entity_table' => static::$properties->dbTable,
-			'entity_id' => $entityId,
-			'tag_id' => $tagId
-		));
-		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(E::ts('Failed to remove tag %1 from %2 %3', array(1 => $tagId, 2 => static::$properties->entityType, 3 => $entityId)), $apiResult);
+		try {
+			$apiResult = civicrm_api3('EntityTag', 'delete', array(
+				'entity_table' => static::$properties->dbTable,
+				'entity_id' => $entityId,
+				'tag_id' => $tagId
+			));
+		} catch (CiviCRM_API3_Exception $e) {
+			throw new CRM_API_Exception(E::ts('Failed to remove tag %1 from %2 %3', [1 => $tagId, 2 => static::$properties->entityType, 3 => $entityId]), $e);
+		}
 		
 		if (array_key_exists($entityId, static::$properties->tagIdCache))
 			unset(static::$properties->tagIdCache[$entityId][$tagId]);
@@ -78,13 +80,14 @@ abstract class CRM_API_TaggableExtendableEntity extends CRM_API_ExtendableEntity
 	}
 	
 	public static function getIdTagIds($contactId) {
-		$apiResult = civicrm_api('EntityTag', 'get', array(
-			'version' => '3',
-			'entity_table' => static::$properties->dbTable,
-			'contact_id' => $contactId
-		));
-		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(E::ts('Failed to retrieve tags for contact %1', array(1 => $contactId)), $apiResult);
+		try {
+			$apiResult = civicrm_api3('EntityTag', 'get', array(
+				'entity_table' => static::$properties->dbTable,
+				'contact_id' => $contactId
+			));
+		} catch (CiviCRM_API3_Exception $e) {
+			throw new CRM_API_Exception(E::ts('Failed to retrieve tags for contact %1', [1 => $contactId]), $e);
+		}
 		
 		$tagIds = array();
 		foreach ($apiResult['values'] as $fields) $tagIds[] = $fields['tag_id'];

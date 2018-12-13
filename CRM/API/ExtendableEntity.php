@@ -328,9 +328,11 @@ abstract class CRM_API_ExtendableEntity extends CRM_API_Entity {
 	}
 	
 	protected static function callCustomValueApi($action, $params) {
-		$apiResult = civicrm_api('CustomValue', $action, array('version' => '3') + $params);
-		if (civicrm_error($apiResult))
-			throw new CRM_API_Exception(E::ts('Error in API call to %1 CustomValue with parameters %2', array(1 => $action, 2 => $params)), $apiResult);
+		try {
+			$apiResult = civicrm_api3('CustomValue', $action, $params);
+		} catch (CiviCRM_API3_Exception $e) {
+			throw new CRM_API_Exception(E::ts('Error in API call to %1 CustomValue with parameters %2', [1 => $action, 2 => $params]), $e);
+		}
 		return $apiResult['values'];
 	}
 	
