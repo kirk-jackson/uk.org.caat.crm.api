@@ -31,7 +31,7 @@ The extension is licensed under [AGPL-3.0](LICENSE.txt).
 ## Requirements
 
 * PHP v7.0+
-* CiviCRM v5.6
+* CiviCRM v5.7
 
 ## Installation (Web UI)
 
@@ -44,7 +44,7 @@ install it with the command-line tool [cv](https://github.com/civicrm/cv).
 
 ```bash
 cd <extension-dir>
-cv dl uk.org.caat.crm.api@https://github.com/kirk-jackson/uk.org.caat.crm.api/archive/master.zip
+cv dl uk.org.caat.crm.api@https://bitbucket.org/caatuk/uk.org.caat.crm.api/get/3df7e898b4c5.zip
 ```
 
 ## Installation (CLI, Git)
@@ -53,7 +53,7 @@ Sysadmins and developers may clone the [Git](https://en.wikipedia.org/wiki/Git) 
 install it with the command-line tool [cv](https://github.com/civicrm/cv).
 
 ```bash
-git clone https://github.com/kirk-jackson/uk.org.caat.crm.api.git
+git clone https://bitbucket.org/caatuk/uk.org.caat.crm.api.git
 cv en api
 ```
 
