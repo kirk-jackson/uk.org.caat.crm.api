@@ -1,4 +1,3 @@
-
 # Object-Oriented API
 
 Object-Oriented API (OOAPI) is an extension for CiviCRM that provides an object-oriented wrapper for the native APIv3.
