@@ -1,6 +1,6 @@
 # Object-Oriented API
 
-Object-Oriented API (OOAPI) is an extension for CiviCRM that provides an object-oriented wrapper for the native APIv3.
+Object-Oriented API (OOAPI) is an extension for CiviCRM that provides an object-oriented wrapper for [the native APIv3](https://docs.civicrm.org/dev/en/latest/api/).
 
 Its features include:
 
@@ -21,11 +21,11 @@ Its features include:
 $contact = CRM_API_Contact::getSingle($contactId);
 foreach ($contact->getAddresses() as $address) {
     if ($address->city === 'London')
-        $contact->updateGroupStatus('Newsletter', 'Added', '2014-02-02');
+        $contact->updateGroupStatus('Newsletter', 'Added', $dateTime);
 }
 ```
 
-Note that it is helpful to have some familiarity with CiviCRM's native API in order to understand how this extension works.
+Note that it is helpful to have some familiarity with [CiviCRM's native API](https://docs.civicrm.org/dev/en/latest/api/) in order to understand how this extension works.
 
 The extension is licensed under [AGPL-3.0](LICENSE.txt).
 
@@ -103,6 +103,7 @@ public function update($params, $always = TRUE)
 ```php
 $contact->update([
 	'birth_date' => '1814-05-30',
+    'deceased_date' => '1876-07-01',
 	'is_deceased' => TRUE
 ]);
 ```
@@ -113,11 +114,11 @@ public function delete($permanent = TRUE)
 ```
 
 #### Parameters
-* **permanent**: FALSE if the entity is to be moved to the trash (available for Contacts only)
+* **permanent**: FALSE if the entity is to be moved to the trash (available for contacts only)
 
 #### Example
 ```php
-$contact->delete(FALSE);
+$address->delete();
 ```
 
 ### Look up entities
@@ -151,7 +152,7 @@ public static function getSingle($params = [], $required = TRUE, $cache = NULL, 
 #### Parameters
 * **params**: An array of fields and values **or** an integer ID **or**
   a value of the class's default string look-up field (if there is one) with which to uniquely identify an entity
-* **required**: TRUE to throw an exception if there isn't exactly one matching entity;
+* **required**: TRUE to throw an exception if no matching entity is found;
   FALSE to return NULL if no matching entity is found
 * **cache**: TRUE to cache retrieved entities in memory for quicker retrieval; FALSE to not cache;
   NULL for the class's default cache setting
@@ -381,13 +382,31 @@ if ($contact->hasTag('Major Donor')) ...
 public function updateGroupStatus($group, $status, $dateTime = NULL)
 ```
 #### Parameters
-* **group**: A group object, ID or name
+* **group**: A group object, ID or title
 * **status**: One of 'Added', 'Removed' or 'Pending'
 * **dateTime**: A DateTime object or string specifying the date of the status update (defaults to the current date)
 
 #### Example
 ```php
 $contact->updateGroupStatus('Newsletter', 'Added', '2010-11-18');
+```
+
+### Check membership of a group
+```php
+public function inGroup($group, $status = 'Added', $readFromCache = TRUE)
+```
+
+#### Parameters
+* **group**: A group object, ID or title
+* **status**: One of 'Added', 'Removed' or 'Pending'
+* **readFromCache**: FALSE to ignore the cache and look up membership in the database
+
+#### Returns
+A boolean, indicating whether the entity has the specified status in the specified group
+
+#### Example
+```php
+if ($contact->inGroup('Newsletter')) ...
 ```
 
 ## Parent-child relationships
@@ -421,7 +440,27 @@ In the methods listed below, replace the words PARENT and CHILD(REN)
 with the names from columns three and four of the table above,
 e.g. getCHILDREN() becomes getAddresses() or getEmails(), and so on.
 
-### Look up a single child
+### Look up the parent
+```php
+public function getPARENT($required = TRUE, $cache = NULL, $readFromCache = TRUE)
+```
+
+#### Parameters
+* **required**: TRUE to throw an exception if there isn't a parent;
+  FALSE to return NULL if there isn't a parent
+* **cache**: TRUE to cache retrieved parent in memory for quicker retrieval;
+  FALSE to not cache; NULL for the class's default cache setting
+* **readFromCache**: FALSE to ignore the cache and look up entities in the database
+
+#### Returns
+An OOAPI object representing the parent entity
+
+#### Example
+```php
+$optionGroup = $optionValue->getGroup();
+```
+
+### Look up a child
 ```php
 public function getCHILD($field = NULL, $value, $required = TRUE)
 ```
@@ -431,8 +470,8 @@ public function getCHILD($field = NULL, $value, $required = TRUE)
   (May be omitted to use the relationship's default string look-up field or default integer look-up field,
   depending on **value**.)
 * **value**: Uniquely identifies the child entity
-* **required**: TRUE to throw an exception if there isn't exactly one matching child entity;
-  FALSE to return NULL if no matching child entity is found
+* **required**: TRUE to throw an exception if the specified value doesn't match a child entity;
+  FALSE to return NULL if the specified value doesn't match a child entity
 
 #### Returns
 An OOAPI object representing the matching child entity, or NULL if there is no matching child entity
@@ -456,20 +495,7 @@ An array of OOAPI objects representing all the entity's children.
 foreach ($optionGroup->getValues() as $optionValue) ...
 ```
 
-### Look up the parent
-```php
-public function getPARENT()
-```
-
-#### Returns
-An OOAPI object representing the parent entity
-
-#### Example
-```php
-$optionGroup = $optionValue->getGroup();
-```
-
-### Add a child
+### Create a child
 ```php
 public function createCHILD($params, $cache = NULL)
 ```
@@ -507,7 +533,7 @@ $prefixOptionGroup->updateValue('Dr.', ['label' => 'Dr']);
 
 ### Delete a child
 ```php
-public function deleteCHILD($field = NULL, $value)
+public function deleteCHILD($field = NULL, $value, $required)
 ```
 
 #### Parameters
@@ -515,6 +541,8 @@ public function deleteCHILD($field = NULL, $value)
   (May be omitted to use the relationship's default string look-up field or default integer look-up field,
   depending on **value**.)
 * **value**: Uniquely Identifies the child to be deleted
+* **required**: TRUE to throw an exception if there isn't a matching child entity to delete;
+  FALSE to do nothing if there isn't a matching child entity to delete
 
 #### Example
 ```php
@@ -583,26 +611,39 @@ Removes an entity and its child entities from the cache.
 $contact->uncache();
 ```
 
-### Cache all entities
+### Cache all entities of a particular type
 ```php
 public static function cacheAll()
 ```
-Gets and caches all entities of a particular type
+Gets and caches all entities of a specific type
 
 #### Example
 ```php
 CRM_API_Country::cacheAll();
 ```
 
-### Uncache all entities
+### Uncache all entities of a particular type
 ```php
 public static function uncacheAll()
 ```
-Removes all entities of a particular type and their children from the cache
+Removes all entities of a specific type and their children from the cache
 
 #### Example
 ```php
 CRM_API_Activity::uncacheAll();
+```
+
+## Uncache all contact data
+```php
+final public static function uncacheAllContactData()
+```
+Removes all entities that contain contact data from the cache.
+When batch-processing contacts, call this function after processing each contact
+in order to prevent the cache from hogging memory.
+
+#### Example
+```php
+CRM_API_Entity::uncacheAllContactData();
 ```
 
 ### Change default caching behaviour
@@ -661,7 +702,8 @@ class CRM_MyExtension_API_MyEntity extends CRM_API_Entity {
 
 CRM_MyExtension_API_MyEntity::init();
 ```
-The CRM_API_EntityType constructor takes a single argument - an array of optional properties:
+The CRM_API_EntityType constructor takes a single argument - an array of optional properties, including:
+
 * **defaultStringLookup**: The name of a field that the getSingle function will use if passed a string value
 * **displayFields**: An array of names of fields that will be included in an entity's string representation
   (for diagnostic purposes)
@@ -677,3 +719,6 @@ but it does also directly access a few core functions and database tables.
 This means that if CiviCRM's underlying implementation changes, the extension may need to be rewritten.
 
 ## Known Issues
+The get and getSingle functions only match entities using the database's '=' operator.
+They need to be augmented so that other operators can be specified, e.g. '<', 'IS NULL', etc,
+as in the native APIv3.
