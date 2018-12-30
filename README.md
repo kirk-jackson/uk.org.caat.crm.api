@@ -69,8 +69,7 @@ public static function create($params, $cache = NULL)
 ```
 #### Parameters
 * **params**: An array of fields and values for the new entity
-* **cache**: TRUE to cache the entity in memory for quicker retrieval; FALSE to not cache;
-  omit for the class's default cache setting
+* **cache**: TRUE to cache the entity in memory for quicker retrieval; FALSE to not cache; omit for the class's default cache setting
 
 #### Returns
 An OOAPI object representing the newly created entity.
