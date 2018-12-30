@@ -40,8 +40,7 @@ This extension has not yet been published for installation via the web UI.
 
 ## Installation (CLI, Zip)
 
-Sysadmins and developers may download the `.zip` file for this extension and
-install it with the command-line tool [cv](https://github.com/civicrm/cv).
+Sysadmins and developers may download the `.zip` file for this extension and install it with the command-line tool [cv](https://github.com/civicrm/cv).
 
 ```bash
 cd <extension-dir>
@@ -50,8 +49,7 @@ cv dl uk.org.caat.crm.api@https://bitbucket.org/caatuk/uk.org.caat.crm.api/get/3
 
 ## Installation (CLI, Git)
 
-Sysadmins and developers may clone the [Git](https://en.wikipedia.org/wiki/Git) repo for this extension and
-install it with the command-line tool [cv](https://github.com/civicrm/cv).
+Sysadmins and developers may clone the [Git](https://en.wikipedia.org/wiki/Git) repo for this extension and install it with the command-line tool [cv](https://github.com/civicrm/cv).
 
 ```bash
 git clone https://bitbucket.org/caatuk/uk.org.caat.crm.api.git
@@ -61,13 +59,9 @@ cv en api
 ## Usage
 
 ### Class names
-Each type of entity has its own class.
-The name of each class is the native API's entity name prefixed by 'CRM_API_',
-e.g. CRM_API_Contact, CRM_API_Activity, CRM_API_ContributionSoft, etc.
+Each type of entity has its own class. The name of each class is the native API's entity name prefixed by 'CRM_API_', e.g. CRM_API_Contact, CRM_API_Activity, CRM_API_ContributionSoft, etc.
 
-Note: The EntityTag, GroupContact and CustomValue entity types from the native APIv3
-do not have corresponding classes in OOAPI.
-Instead, their functionality is provided by methods of classes that can have tags, groups and custom fields (see below).
+Note: The EntityTag, GroupContact and CustomValue entity types from the native APIv3 do not have corresponding classes in OOAPI. Instead, their functionality is provided by methods of classes that can have tags, groups and custom fields (see below).
 
 ### Create an entity
 ```php
@@ -127,17 +121,14 @@ public static function get($params = [], $cache = NULL, $readFromCache = TRUE)
 ```
 
 #### Parameters
-* **params**: An array of fields and values to look up matching entities.
-  May include an **options** array in order to specify sort order or limit the number of entities returned.
-* **cache**: TRUE to cache retrieved entities in memory for quicker retrieval; FALSE to not cache;
-  NULL for the class's default cache setting
+* **params**: An array of fields and values to look up matching entities. May include an **options** array in order to specify sort order or limit the number of entities returned.
+* **cache**: TRUE to cache retrieved entities in memory for quicker retrieval; FALSE to not cache; NULL for the class's default cache setting
 * **readFromCache**: FALSE to ignore the cache and look up entities in the database
 
 #### Returns
 An array of OOAPI objects representing any matching entities.
 
-Whereas the native API limits the number of records returned by default, OOAPI does not.
-A limit may be specified by including an **options** array in the **params**, as for the native APIv3.
+Whereas the native API limits the number of records returned by default, OOAPI does not. A limit may be specified by including an **options** array in the **params**, as for the native APIv3.
 
 #### Example
 ```php
@@ -150,12 +141,9 @@ public static function getSingle($params = [], $required = TRUE, $cache = NULL, 
 ```
 
 #### Parameters
-* **params**: An array of fields and values **or** an integer ID **or**
-  a value of the class's default string look-up field (if there is one) with which to uniquely identify an entity
-* **required**: TRUE to throw an exception if no matching entity is found;
-  FALSE to return NULL if no matching entity is found
-* **cache**: TRUE to cache retrieved entities in memory for quicker retrieval; FALSE to not cache;
-  NULL for the class's default cache setting
+* **params**: An array of fields and values **or** an integer ID **or** a value of the class's default string look-up field (if there is one) with which to uniquely identify an entity
+* **required**: TRUE to throw an exception if no matching entity is found; FALSE to return NULL if no matching entity is found
+* **cache**: TRUE to cache retrieved entities in memory for quicker retrieval; FALSE to not cache; NULL for the class's default cache setting
 * **readFromCache**: FALSE to ignore the cache and look up entities in the database
 
 #### Returns
@@ -170,9 +158,7 @@ $contact = CRM_API_Contact::getSingle($contactId);
 ```php
 public function refresh()
 ```
-If an entity has been updated in the database without using OOAPI then
-any OOAPI objects referring to the entity may be out of sync.
-This function reloads an object's fields from the database.
+If an entity has been updated in the database without using OOAPI then any OOAPI objects referring to the entity may be out of sync. This function reloads an object's fields from the database.
 
 #### Example
 ```php
@@ -196,13 +182,11 @@ if ($address->isDeleted()) ...
 ```php
 public static function getObject($fields, $cache = NULL)
 ```
-This method constructs an OOAPI object from a BAO, a DAO or an array of fields.
-It is particularly useful in the **post** hook.
+This method constructs an OOAPI object from a BAO, a DAO or an array of fields. It is particularly useful in the **post** hook.
 
 #### Parameters
 * **fields**: A BAO, DAO or array of fields with which to initialise the object
-* **cache**: TRUE to cache the entity in memory for quicker retrieval; FALSE to not cache;
-  omit for the class's default cache setting
+* **cache**: TRUE to cache the entity in memory for quicker retrieval; FALSE to not cache; omit for the class's default cache setting
 
 #### Returns
 An OOAPI object with the specified field values
@@ -223,8 +207,7 @@ public static function getFromQuery($query, $params = [], $cache = NULL)
 #### Parameters
 * **query**: An SQL query, which must return all the entity's fields including **id**
 * **params**: The values for any variables in the query (in the same format as for CRM_Core_DAO::executeQuery)
-* **cache**: TRUE to cache the entity in memory for quicker retrieval; FALSE to not cache;
-  omit for the class's default cache setting
+* **cache**: TRUE to cache the entity in memory for quicker retrieval; FALSE to not cache; omit for the class's default cache setting
 
 #### Returns
 An array of OOAPI objects representing all entities selected by the query.
@@ -244,15 +227,9 @@ if (isset($contact->first_name))
     $firstName = $contact->first_name;
 ```
 
-Field values are returned using appropriate PHP types.
-String fields are returned as PHP strings, integer fields are returned as PHP integers,
-floating point fields are returned as PHP floats, boolean fields are returned as PHP booleans,
-array fields are returned as arrays, and date/time fields are returned as DateTime objects.
-They may also be set using the same types.
+Field values are returned using appropriate PHP types. String fields are returned as PHP strings, integer fields are returned as PHP integers, floating point fields are returned as PHP floats, boolean fields are returned as PHP booleans, array fields are returned as arrays, and date/time fields are returned as DateTime objects. They may also be set using the same types.
 
-This allows the fields to be operated on intuitively withour having to convert them first.
-It also allows for function overloading,
-e.g. where a function does one thing if passed an integer ID value or another thing if passed a string.
+This allows the fields to be operated on intuitively withour having to convert them first. It also allows for function overloading, e.g. where a function does one thing if passed an integer ID value or another thing if passed a string.
 
 (By comparison, the native APIv3 returns many fields as strings when they are not actually strings.)
 
@@ -290,9 +267,7 @@ Custom field sets that allow multiple records are slightly different. The values
 ```php
 foreach ($contact->Job_Titles as $recordId => $jobTitle) ...
 ```
-But they cannot be set using the same notation.
-Instead, each field has its own **add** and **update** methods.
-In the methods below, replace CUSTOMFIELD with the name of the custom field.
+But they cannot be set using the same notation. Instead, each field has its own **add** and **update** methods. In the methods below, replace CUSTOMFIELD with the name of the custom field.
 
 ### Add custom values
 ```php
@@ -321,9 +296,7 @@ $contact->updateQualifications([$recordId => 'Computer Science BEng']);
 ```
 
 ### Get a custom field's option group
-Custom fields whose values are selected from a pre-defined list using a Select or Radio control
-have an associated option group that stores the possible values.
-This function returns the option group used by such a custom field.
+Custom fields whose values are selected from a pre-defined list using a Select or Radio control have an associated option group that stores the possible values. This function returns the option group used by such a custom field.
 ```php
 public function getOptionGroup()
 ```
@@ -410,11 +383,7 @@ if ($contact->inGroup('Newsletter')) ...
 ```
 
 ## Parent-child relationships
-OOAPI models parent-child relationships between entities.
-For each relationship there are methods for parent entities to access their children
-and for child entities to access their parents.
-The names of these methods depend on the type of the parent/child entities being accessed,
-as shown in the table below.
+OOAPI models parent-child relationships between entities. For each relationship there are methods for parent entities to access their children and for child entities to access their parents. The names of these methods depend on the type of the parent/child entities being accessed, as shown in the table below.
 
 Parent entity | Child entity | Child->parent methods | Parent->child methods
 -|-|-|-
@@ -436,9 +405,7 @@ CustomGroup | CustomField | Group | Field(s)
 OptionGroup | OptionValue | Group | Value(s)
 Country | StateProvince | Country | StateProvince(s)
 
-In the methods listed below, replace the words PARENT and CHILD(REN)
-with the names from columns three and four of the table above,
-e.g. getCHILDREN() becomes getAddresses() or getEmails(), and so on.
+In the methods listed below, replace the words PARENT and CHILD(REN) with the names from columns three and four of the table above, e.g. getCHILDREN() becomes getAddresses() or getEmails(), and so on.
 
 ### Look up the parent
 ```php
@@ -446,10 +413,8 @@ public function getPARENT($required = TRUE, $cache = NULL, $readFromCache = TRUE
 ```
 
 #### Parameters
-* **required**: TRUE to throw an exception if there isn't a parent;
-  FALSE to return NULL if there isn't a parent
-* **cache**: TRUE to cache retrieved parent in memory for quicker retrieval;
-  FALSE to not cache; NULL for the class's default cache setting
+* **required**: TRUE to throw an exception if there isn't a parent; FALSE to return NULL if there isn't a parent
+* **cache**: TRUE to cache retrieved parent in memory for quicker retrieval; FALSE to not cache; NULL for the class's default cache setting
 * **readFromCache**: FALSE to ignore the cache and look up entities in the database
 
 #### Returns
@@ -466,12 +431,9 @@ public function getCHILD($field = NULL, $value, $required = TRUE)
 ```
 
 #### Parameters
-* **field**: The field used to look up the child entity
-  (May be omitted to use the relationship's default string look-up field or default integer look-up field,
-  depending on **value**.)
+* **field**: The field used to look up the child entity (May be omitted to use the relationship's default string look-up field or default integer look-up field, depending on **value**.)
 * **value**: Uniquely identifies the child entity
-* **required**: TRUE to throw an exception if the specified value doesn't match a child entity;
-  FALSE to return NULL if the specified value doesn't match a child entity
+* **required**: TRUE to throw an exception if the specified value doesn't match a child entity; FALSE to return NULL if the specified value doesn't match a child entity
 
 #### Returns
 An OOAPI object representing the matching child entity, or NULL if there is no matching child entity
@@ -502,8 +464,7 @@ public function createCHILD($params, $cache = NULL)
 
 #### Parameters
 * **params**: An array of fields and values for the new child entity
-* **cache**: TRUE to cache the entity in memory for quicker retrieval; FALSE to not cache;
-  omit for the class's default cache setting
+* **cache**: TRUE to cache the entity in memory for quicker retrieval; FALSE to not cache; omit for the class's default cache setting
 
 #### Returns
 An OOAPI object representing the newly created child entity.
@@ -519,9 +480,7 @@ public function updateCHILD($field = NULL, $value, $params)
 ```
 
 #### Parameters
-* **field**: The field used to look up the child entity
-  (May be omitted to use the relationship's default string look-up field or default integer look-up field,
-  depending on **value**.)
+* **field**: The field used to look up the child entity (May be omitted to use the relationship's default string look-up field or default integer look-up field, depending on **value**.)
 * **value**: Uniquely Identifies the child to be updated
 * **params**: An array of fields and their new values
 
@@ -537,12 +496,9 @@ public function deleteCHILD($field = NULL, $value, $required)
 ```
 
 #### Parameters
-* **field**: The field used to look up the child entity
-  (May be omitted to use the relationship's default string look-up field or default integer look-up field,
-  depending on **value**.)
+* **field**: The field used to look up the child entity (May be omitted to use the relationship's default string look-up field or default integer look-up field, depending on **value**.)
 * **value**: Uniquely Identifies the child to be deleted
-* **required**: TRUE to throw an exception if there isn't a matching child entity to delete;
-  FALSE to do nothing if there isn't a matching child entity to delete
+* **required**: TRUE to throw an exception if there isn't a matching child entity to delete; FALSE to do nothing if there isn't a matching child entity to delete
 
 #### Example
 ```php
@@ -561,32 +517,22 @@ $contact->deleteAddresses();
 ```
 
 ## Name-based look-ups
-OOAPI facilitates the use of names to identify entities.
-For example:
+OOAPI facilitates the use of names to identify entities. For example:
 ```php
 $activityTypeOptionGroup = CRM_API_OptionGroup::getSingle('activity_type');
 $activityTypeId = $activityTypeOptionGroup->getValue('Meeting')->value;
 ```
-This makes the code easier to read than using hard-coded ID numbers.
-(It is bad practice to use literal ID numbers in code.)
+This makes the code easier to read than using hard-coded ID numbers. (It is bad practice to use literal ID numbers in code.)
 
 ## Error handling
-When any error is encountered, an exception is thrown.
-These can be caught and handled in the calling code.
-Converting the exception to a string will reveal the stack trace.
+When any error is encountered, an exception is thrown. These can be caught and handled in the calling code. Converting the exception to a string will reveal the stack trace.
 
-When CiviCRM is in debug mode,
-OOAPI will check that fields returned by the native API match the parameters passed in,
-and it will throw an exception if they do not.
+When CiviCRM is in debug mode, OOAPI will check that fields returned by the native API match the parameters passed in, and it will throw an exception if they do not.
 
 ## Caching
-By default, entities are cached in memory when they are encountered.
-This makes repeated look-ups more efficient.
-However, if a large amount of data is being processed, caching may need to be managed
-so that it doesn't take up too much memory.
+By default, entities are cached in memory when they are encountered. This makes repeated look-ups more efficient. However, if a large amount of data is being processed, caching may need to be managed so that it doesn't take up too much memory.
 
-Some methods accept a $cache argument that prevents the method from caching the entity.
-There are some methods specifically for managing caching:
+Some methods accept a $cache argument that prevents the method from caching the entity. There are some methods specifically for managing caching:
 
 ### Cache an entity
 ```php
@@ -603,8 +549,7 @@ $contact->cache();
 ```php
 public function uncache()
 ```
-Removes an entity and its child entities from the cache.
-(The object's field values are still accessible.)
+Removes an entity and its child entities from the cache. (The object's field values are still accessible.)
 
 #### Example
 ```php
@@ -637,9 +582,7 @@ CRM_API_Activity::uncacheAll();
 ```php
 final public static function uncacheAllContactData()
 ```
-Removes all entities that contain contact data from the cache.
-When batch-processing contacts, call this function after processing each contact
-in order to prevent the cache from hogging memory.
+Removes all entities that contain contact data from the cache. When batch-processing contacts, call this function after processing each contact in order to prevent the cache from hogging memory.
 
 #### Example
 ```php
@@ -674,20 +617,14 @@ foreach (CRM_API_Entity::diagnostics() as $class => $numCached) ...
 
 ## Implementation
 ### Classes
-All entity classes (e.g. CRM_API_Contact) are derived from the abstract base class CRM_API_Entity.
-It is this class that does most of the work.
+All entity classes (e.g. CRM_API_Contact) are derived from the abstract base class CRM_API_Entity. It is this class that does most of the work.
 
-Entity classes that can have custom data are derived from CRM_API_ExtendableEntity.
-Entity classes that can be tagged are derived from CRM_API_TaggableExtendableEntity.
+Entity classes that can have custom data are derived from CRM_API_ExtendableEntity. Entity classes that can be tagged are derived from CRM_API_TaggableExtendableEntity.
 
 ### Adding new classes
-It is fairly simple to add new OOAPI classes.
-There must be a database table and a DAO or BAO for the entity type, both named according to CiviCRM convention.
-An OOAPI class needs to be created to wrap the DAO/BAO.
+It is fairly simple to add new OOAPI classes. There must be a database table and a DAO or BAO for the entity type, both named according to CiviCRM convention. An OOAPI class needs to be created to wrap the DAO/BAO.
 
-For example, if the database table is called **my_extension_my_entity**
-and the DAO class is **CRM_MyExtension_DAO_MyEntity**
-then the OOAPI class should be defined as follows:
+For example, if the database table is called **my_extension_my_entity** and the DAO class is **CRM_MyExtension_DAO_MyEntity** then the OOAPI class should be defined as follows:
 ```php
 class CRM_MyExtension_API_MyEntity extends CRM_API_Entity {
 	protected static $properties;
@@ -705,20 +642,13 @@ CRM_MyExtension_API_MyEntity::init();
 The CRM_API_EntityType constructor takes a single argument - an array of optional properties, including:
 
 * **defaultStringLookup**: The name of a field that the getSingle function will use if passed a string value
-* **displayFields**: An array of names of fields that will be included in an entity's string representation
-  (for diagnostic purposes)
+* **displayFields**: An array of names of fields that will be included in an entity's string representation (for diagnostic purposes)
 * **dbTablePrefix**: The prefix of the underlying database table. (Defaults to 'civicrm'.)
-* **fieldsByType**: Field names grouped by PHP data type.
-  (Only necessary for fields whose type cannot be inferred from the underlying database table.)
-* **lookups**: An array of names of fields that can be used to uniquely identify entities of this type.
-  (Corresponds to unique keys in the underlying database table. Used for caching.)
+* **fieldsByType**: Field names grouped by PHP data type. (Only necessary for fields whose type cannot be inferred from the underlying database table.)
+* **lookups**: An array of names of fields that can be used to uniquely identify entities of this type. (Corresponds to unique keys in the underlying database table. Used for caching.)
 
 ### Dependencies
-This extension is built to use the native APIv3's core actions as much as possible,
-but it does also directly access a few core functions and database tables.
-This means that if CiviCRM's underlying implementation changes, the extension may need to be rewritten.
+This extension is built to use the native APIv3's core actions as much as possible, but it does also directly access a few core functions and database tables. This means that if CiviCRM's underlying implementation changes, the extension may need to be rewritten.
 
 ## Known Issues
-The get and getSingle functions only match entities using the database's '=' operator.
-They need to be augmented so that other operators can be specified, e.g. '<', 'IS NULL', etc,
-as in the native APIv3.
+The get and getSingle functions only match entities using the database's '=' operator. They need to be augmented so that other operators can be specified, e.g. '<', 'IS NULL', etc, as in the native APIv3.
