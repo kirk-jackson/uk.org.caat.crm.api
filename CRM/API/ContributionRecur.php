@@ -2,7 +2,7 @@
 
 use CRM_API_ExtensionUtil as E;
 
-class CRM_API_ContributionRecur extends CRM_API_Entity {
+class CRM_API_ContributionRecur extends CRM_API_ExtendableEntity {
 	protected static $properties;
 	
 	protected static function initProperties() {
