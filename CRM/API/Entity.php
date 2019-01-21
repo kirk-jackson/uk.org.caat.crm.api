@@ -667,7 +667,8 @@ abstract class CRM_API_Entity {
 					} else {
 						// Call the generic API.
 						$apiFunction = '_civicrm_api3_basic_' . $action;
-						$apiResult = $apiFunction(static::$properties->daoClass, $apiParams);
+						$apiParamsWithVersion = $apiParams + ['version' => '3'];
+						$apiResult = $apiFunction(static::$properties->daoClass, $apiParamsWithVersion);
 						if (civicrm_error($apiResult))
 							throw new Exception(E::ts('Error in API call to %1 %2 %3', [1 => $action, 2 => static::$properties->entityType, 3 => CRM_API_Utils::toString($params)]));
 					}
